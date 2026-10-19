@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>維港轉生 - 測試版</title>
+<title>維港轉生 - 序章測試版</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
     
     body {
-        background-color: #2c2c2c;
+        background-color: #111;
         color: #fff;
         font-family: 'DotGothic16', monospace, "微軟正黑體";
         display: flex;
@@ -16,261 +16,282 @@
         align-items: center;
         height: 100vh;
         margin: 0;
-    }
-    #phone-container {
-        width: 320px;
-        height: 568px;
-        background-color: #000;
-        border: 4px solid #555;
-        border-radius: 20px;
-        position: relative;
         overflow: hidden;
+    }
+    #game-container {
+        width: 800px;
+        height: 600px;
+        background-color: #000;
+        position: relative;
+        border: 4px solid #555;
+        box-shadow: 0 0 20px #000;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 0 20px rgba(0,0,0,0.8);
     }
-    /* 碎芒特效 */
-    #phone-container::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0) 50%);
-        pointer-events: none;
-    }
-    #status-bar {
-        background-color: #075E54;
-        padding: 5px 10px;
+    #screen {
+        flex: 1;
+        position: relative;
+        background-color: #000;
+        transition: background-color 0.5s;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
+        align-items: center;
+        font-size: 80px; /* For emojis */
+    }
+    #flash-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: white;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+    /* Phone UI */
+    #phone-ui {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        width: 200px;
+        height: 350px;
+        background-color: #222;
+        border: 4px solid #444;
+        border-radius: 15px;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        z-index: 10;
+    }
+    #phone-status {
+        background-color: #075E54;
+        padding: 5px;
         font-size: 12px;
         border-bottom: 2px solid #128C7E;
-    }
-    #chat-header {
-        background-color: #075E54;
-        padding: 10px;
-        font-size: 16px;
-        font-weight: bold;
         display: flex;
-        align-items: center;
+        justify-content: space-between;
     }
-    #chat-header span { margin-left: 10px; }
-    #chat-box {
+    #phone-screen {
         flex: 1;
-        background-color: #E5DDD5;
+        background-color: #000;
         padding: 10px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .message {
-        max-width: 70%;
-        padding: 8px;
-        border-radius: 5px;
         font-size: 14px;
-        color: #000;
+        overflow-y: auto;
+    }
+    /* Dialog Box */
+    #dialog-box {
+        height: 150px;
+        background: linear-gradient(to bottom, #000080, #000033);
+        border-top: 4px solid #fff;
+        padding: 15px;
+        box-sizing: border-box;
+        cursor: pointer;
         position: relative;
     }
-    .msg-system {
-        align-self: center;
-        background-color: rgba(0,0,0,0.5);
-        color: #fff;
-        font-size: 12px;
-        border-radius: 10px;
-        padding: 5px 10px;
-    }
-    .msg-mine {
-        align-self: flex-end;
-        background-color: #DCF8C6;
-        border: 1px solid #c2e0aa;
-    }
-    .msg-her {
-        align-self: flex-start;
-        background-color: #FFF;
-        border: 1px solid #ccc;
-    }
-    .blue-tick { color: #34B7F1; font-weight: bold; font-size: 12px; float: right; margin-top: 5px; }
-    
-    #controls {
-        background-color: #f0f0f0;
-        padding: 10px;
-        display: flex;
-        gap: 10px;
-    }
-    button {
-        flex: 1;
-        padding: 10px;
-        font-family: inherit;
-        font-size: 14px;
+    #speaker {
+        color: #ffcc00;
         font-weight: bold;
-        border: 2px solid #000;
-        background-color: #fff;
-        cursor: pointer;
-        box-shadow: 2px 2px 0 #000;
+        font-size: 20px;
+        margin-bottom: 10px;
     }
-    button:active {
-        box-shadow: 0 0 0 #000;
-        transform: translate(2px, 2px);
+    #text {
+        font-size: 18px;
+        line-height: 1.5;
     }
-    
-    /* 毒撚焦慮特效 */
-    .anxiety-mode { animation: shake 0.5s infinite; }
-    @keyframes shake {
-        0% { transform: translate(1px, 1px) rotate(0deg); }
-        10% { transform: translate(-1px, -2px) rotate(-1deg); }
-        20% { transform: translate(-3px, 0px) rotate(1deg); }
-        30% { transform: translate(3px, 2px) rotate(0deg); }
-        40% { transform: translate(1px, -1px) rotate(1deg); }
-        50% { transform: translate(-1px, 2px) rotate(-1deg); }
-        60% { transform: translate(-3px, 1px) rotate(0deg); }
-        70% { transform: translate(3px, 1px) rotate(-1deg); }
-        80% { transform: translate(-1px, -1px) rotate(1deg); }
-        90% { transform: translate(1px, 2px) rotate(0deg); }
-        100% { transform: translate(1px, -2px) rotate(-1deg); }
-    }
-    
-    #os-text {
+    .next-indicator {
         position: absolute;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: red;
-        font-size: 24px;
-        font-weight: bold;
-        text-shadow: 2px 2px #000;
+        bottom: 10px;
+        right: 20px;
+        font-size: 20px;
+        animation: blink 1s infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    
+    /* Battle Menu */
+    #battle-menu {
+        position: absolute;
+        bottom: 160px;
+        left: 20px;
         display: none;
-        width: 100%;
-        text-align: center;
-        pointer-events: none;
-        z-index: 10;
+        background-color: #000;
+        border: 2px solid #fff;
+        padding: 10px;
+        z-index: 20;
+    }
+    .battle-btn {
+        display: block;
+        width: 100px;
+        padding: 10px;
+        margin: 5px 0;
+        background: #333;
+        color: #fff;
+        border: 1px solid #fff;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 16px;
+    }
+    .battle-btn:hover { background: #555; }
+    
+    /* WhatsApp UI Overlay */
+    #wa-alert {
+        background-color: #25D366;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-size: 12px;
+        display: none;
     }
 </style>
 </head>
 <body>
 
-<div id="phone-container">
-    <div id="status-bar">
-        <span>信號: IIII</span>
-        <span id="hp-display">電量(HP): 100%</span>
+<div id="game-container">
+    <div id="screen">
+        <span id="center-sprite"></span>
+        <div id="flash-overlay"></div>
+        
+        <div id="phone-ui">
+            <div id="phone-status">
+                <span>信號: IIII</span>
+                <span id="hp-display" style="color:red;">電量: 15%</span>
+            </div>
+            <div id="phone-screen">
+                <div id="wa-alert">
+                    <strong>WhatsApp 系統</strong><br>
+                    強制加入聯絡人：傲嬌女騎士
+                </div>
+            </div>
+        </div>
+        
+        <div id="battle-menu">
+            <button class="battle-btn" onclick="battleAction('attack')">攻擊</button>
+            <button class="battle-btn" onclick="battleAction('defend')">防禦 (舉起手機)</button>
+        </div>
     </div>
-    <div id="chat-header">
-        👱‍♀️ <span>傲嬌女騎士</span>
-    </div>
-    <div id="chat-box">
-        <div class="msg-system">你已添加 傲嬌女騎士 為聯絡人</div>
-    </div>
-    <div id="os-text">死啦！做咩已讀不回！</div>
-    <div id="controls">
-        <button id="btn-send" onclick="sendSticker()">Send 🐸</button>
-        <button id="btn-breath" onclick="deepBreath()" disabled style="opacity:0.5;">深呼吸 (回血)</button>
+    
+    <div id="dialog-box" onclick="advanceStory()">
+        <div id="speaker"></div>
+        <div id="text">點擊開始測試...</div>
+        <div class="next-indicator">▼</div>
     </div>
 </div>
 
 <script>
-    let hp = 100;
-    let anxietyTimer = null;
-    let isAnxious = false;
-    
-    const chatBox = document.getElementById('chat-box');
-    const hpDisplay = document.getElementById('hp-display');
-    const btnSend = document.getElementById('btn-send');
-    const btnBreath = document.getElementById('btn-breath');
-    const phoneContainer = document.getElementById('phone-container');
-    const osText = document.getElementById('os-text');
+    let step = 0;
+    let hp = 15;
+    let inBattle = false;
 
-    function addMessage(text, type, ticks = '') {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${type}`;
-        msgDiv.innerHTML = text + (ticks ? `<div class="blue-tick">${ticks}</div>` : '');
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    const story = [
+        // Scene 1
+        { speaker: '主角 OS', text: '黑雨加十號風球，老闆竟然話「風更」有雙倍人工...', bg: '#111', sprite: '🌧️' },
+        { speaker: '主角 OS', text: '連續 OT 咗 72 個鐘，我連今期手遊抽老婆嘅保底都未撳……', bg: '#111', sprite: '🌧️' },
+        { speaker: '主角', text: '死啦！大風得滯，部電話飛咗出去啊！我隻驚仲未引繼㗎！！', bg: '#1a2a3a', sprite: '🌪️📱' },
+        { speaker: '系統', text: '（噗通！主角跌入維港）', bg: '#000', sprite: '', flash: true },
+        
+        // Scene 2
+        { speaker: '女神', text: '可憐的靈魂啊，你在原本的世界已經死去了...', bg: '#fff', sprite: '👼', color: '#000' },
+        { speaker: '主角', text: '喂等等先！我部電話呢？！入面有我幾百個G嘅「學習資料」㗎！！', bg: '#fff', sprite: '👼😡', color: '#000' },
+        { speaker: '女神', text: '蛤？電…話？那是甚麼神器？總之，賜予你力量，去吧勇者！', bg: '#fff', sprite: '👼💧', color: '#000' },
+        { speaker: '主角', text: '我唔要做勇者，喂！推我做咩！！', bg: '#fff', sprite: '👼✋', color: '#000' },
+        { speaker: '系統', text: '（強烈白光閃爍）', bg: '#fff', sprite: '', flash: true },
+        
+        // Scene 3
+        { speaker: '主角', text: '（爬起身）咦？部機喺度喎！仲識著mon！', bg: '#2d5a27', sprite: '🌲', showPhone: true },
+        { speaker: '主角', text: '大鑊！！得番 15% 電！呢個荒山野嶺邊度有得叉電啊！！', bg: '#2d5a27', sprite: '🌲' },
+        { speaker: '系統提示', text: '【主線任務】：尋找充電方法，否則電量歸零將會社會性死亡。', bg: '#2d5a27', sprite: '🌲' },
+        
+        // Scene 4
+        { speaker: '系統提示', text: '草叢跳出了一隻發出劈啪聲的怪物！', bg: '#2d5a27', sprite: '⚡👾' },
+        { speaker: '主角', text: '史萊姆？！身上有靜電……難道！', bg: '#2d5a27', sprite: '⚡👾' },
+        { speaker: '系統', text: '進入戰鬥！請選擇行動。', bg: '#2d5a27', sprite: '⚡👾', battle: true },
+        
+        // Scene 5 (Reached after battle)
+        { speaker: '主角', text: '呼，補番啲電。不過 35% 都係冇安全感。', bg: '#2d5a27', sprite: '🌲', hpUpdate: 35 },
+        { speaker: '遠處的少女', text: '呀——！放開我，你們這些低賤的哥布林！', bg: '#2d5a27', sprite: '🌲' },
+        { speaker: '主角', text: '經典嘅英雄救美？但係我得 35% 電，都係扮睇唔到保命要緊。', bg: '#2d5a27', sprite: '🌲' },
+        { speaker: '系統提示', text: '（手機突然震動）', bg: '#2d5a27', sprite: '🌲', waAlert: true },
+        { speaker: '主角', text: '（望向手機）金髮雙馬尾？！正中我性癖！！', bg: '#2d5a27', sprite: '🌲' },
+        { speaker: '主角', text: '咳咳，身為一個有修養嘅香港男士，見死不救係唔啱嘅。', bg: '#2d5a27', sprite: '🌲' },
+        { speaker: '系統提示', text: '【主線任務更新】：第一次英雄救美（靠把口）。<br><br>--- 序章測試結束 ---', bg: '#000', sprite: '🎉' }
+    ];
+
+    function advanceStory() {
+        if (inBattle || step >= story.length) return;
+        
+        const current = story[step];
+        
+        // Update Text
+        document.getElementById('speaker').innerText = current.speaker;
+        document.getElementById('text').innerHTML = current.text;
+        
+        // Update Visuals
+        document.getElementById('screen').style.backgroundColor = current.bg;
+        document.getElementById('center-sprite').innerText = current.sprite;
+        document.getElementById('dialog-box').style.color = current.color || '#fff';
+        
+        // Flash Effect
+        if (current.flash) {
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = 1;
+            setTimeout(() => flash.style.opacity = 0, 100);
+        }
+        
+        // Show Phone UI
+        if (current.showPhone) {
+            document.getElementById('phone-ui').style.display = 'flex';
+        }
+        
+        // HP Update
+        if (current.hpUpdate) {
+            updateHP(current.hpUpdate);
+        }
+        
+        // WhatsApp Alert
+        if (current.waAlert) {
+            document.getElementById('wa-alert').style.display = 'block';
+        }
+        
+        // Battle Trigger
+        if (current.battle) {
+            inBattle = true;
+            document.getElementById('battle-menu').style.display = 'block';
+            return; // Pause story progression for battle
+        }
+        
+        step++;
     }
 
-    function sendSticker() {
-        btnSend.disabled = true;
-        btnSend.style.opacity = '0.5';
-        addMessage('🐸 (試探性遞茶)', 'msg-mine', '✓✓');
+    function battleAction(action) {
+        const textElem = document.getElementById('text');
+        const speakerElem = document.getElementById('speaker');
         
-        // 模擬兩秒後雙藍剔
-        setTimeout(() => {
-            const ticks = document.querySelector('.blue-tick');
-            if (ticks) ticks.innerHTML = '✓✓ <span style="color: blue;">已讀</span>';
-            startAnxiety();
-        }, 1500);
-    }
-
-    function startAnxiety() {
-        isAnxious = true;
-        btnBreath.disabled = false;
-        btnBreath.style.opacity = '1';
-        phoneContainer.classList.add('anxiety-mode');
-        osText.style.display = 'block';
-        
-        // 每 0.5 秒扣一次 HP
-        anxietyTimer = setInterval(() => {
-            hp -= 3;
-            if (hp <= 0) {
-                hp = 0;
-                gameOver(false);
-            }
-            updateHP();
+        if (action === 'attack') {
+            speakerElem.innerText = '主角';
+            textElem.innerText = '你踢了史萊姆一腳，造成 0 點傷害。腳好痛！';
+        } else if (action === 'defend') {
+            speakerElem.innerText = '系統提示';
+            textElem.innerHTML = '主角高舉手機！<br>雷史萊姆的閃電劈在手機上，【電量 + 20%】！';
+            updateHP(35);
             
-            // 隨機彈出毒撚 OS
-            const osThoughts = ["佢係咪憎我？", "做錯咩...", "點算點算", "佢打緊機？"];
-            osText.innerText = osThoughts[Math.floor(Math.random() * osThoughts.length)];
-        }, 500);
-
-        // 設定 8 秒後女角才回覆
-        setTimeout(() => {
-            if (hp > 0) girlReplies();
-        }, 8000);
+            setTimeout(() => {
+                speakerElem.innerText = '系統提示';
+                textElem.innerText = '雷史萊姆被你的「毒撚癡漢氣場」嚇跑了！戰鬥結束。';
+                document.getElementById('battle-menu').style.display = 'none';
+                inBattle = false;
+                step++; // Move to Scene 5
+            }, 2000);
+        }
     }
 
-    function deepBreath() {
-        if (!isAnxious) return;
-        hp += 5; // 狂按按鈕回血對抗焦慮
-        if (hp > 100) hp = 100;
-        updateHP();
-        phoneContainer.classList.remove('anxiety-mode');
-        setTimeout(() => {
-            if (isAnxious) phoneContainer.classList.add('anxiety-mode');
-        }, 100);
+    function updateHP(newHP) {
+        hp = newHP;
+        const hpDisplay = document.getElementById('hp-display');
+        hpDisplay.innerText = `電量: ${hp}%`;
+        hpDisplay.style.color = hp > 20 ? 'white' : 'red';
     }
 
-    function updateHP() {
-        hpDisplay.innerText = `電量(HP): ${hp}%`;
-        if (hp < 30) hpDisplay.style.color = "red";
-        else hpDisplay.style.color = "white";
-    }
-
-    function girlReplies() {
-        clearInterval(anxietyTimer);
-        isAnxious = false;
-        phoneContainer.classList.remove('anxiety-mode');
-        osText.style.display = 'none';
-        btnBreath.disabled = true;
-        btnBreath.style.opacity = '0.5';
-        
-        addMessage('吵死了！大半夜傳甚麼奇怪青蛙！<br>...你剛才說有芒果班戟？', 'msg-her');
-        setTimeout(() => {
-            alert('🎉 任務成功！女騎士好感度上升！');
-            btnSend.innerText = '下一關';
-            btnSend.disabled = false;
-            btnSend.style.opacity = '1';
-        }, 500);
-    }
-
-    function gameOver(success) {
-        clearInterval(anxietyTimer);
-        isAnxious = false;
-        phoneContainer.classList.remove('anxiety-mode');
-        osText.style.display = 'none';
-        btnBreath.disabled = true;
-        
-        addMessage('SYSTEM: 毒撚焦慮症發作，心臟停頓。Game Over。', 'msg-system');
-        alert('💀 你的 HP (電量) 歸零，已在異世界社會性死亡。');
-        location.reload();
-    }
+    // Initialize first click
+    document.getElementById('speaker').innerText = '系統';
+    document.getElementById('text').innerText = '點擊畫面開始遊戲...';
 </script>
 </body>
 </html>
