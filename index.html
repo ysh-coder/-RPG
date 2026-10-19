@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v0.1</title>
+  <title>WhatsApp Escape - v0.2</title>
   <style>
-    /* 基礎重置與排版 */
     body {
       margin: 0;
       background-color: #000;
@@ -15,25 +14,20 @@
       height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
-    /* 手機外框模擬 */
     #phone {
       width: 100%;
       max-width: 400px;
       height: 100vh;
       max-height: 850px;
-      background: #0B141A; /* WA 深色模式背景 */
+      background: #0B141A;
       position: relative;
       display: flex;
       flex-direction: column;
       box-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
-    
     @media (min-width: 500px) {
       #phone { height: 850px; border-radius: 30px; overflow: hidden; border: 8px solid #222; }
     }
-
-    /* 頂部狀態列 */
     #status-bar {
       height: 25px;
       background: #1F2C34;
@@ -45,8 +39,6 @@
       font-size: 12px;
       font-weight: bold;
     }
-
-    /* WhatsApp 聯絡人頂部 */
     #wa-header {
       background: #1F2C34;
       color: #E9EDEF;
@@ -71,11 +63,9 @@
     #wa-header .info { display: flex; flex-direction: column; }
     #wa-header .name { font-weight: 600; font-size: 16px; }
     #wa-header .status { font-size: 13px; color: #8696A0; }
-
-    /* 聊天室背景與對話區域 */
     #chat-bg {
       flex: 1;
-      background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* WA 預設塗鴉背景 */
+      background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
       background-color: #0B141A;
       background-blend-mode: overlay;
       padding: 15px;
@@ -83,8 +73,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* 訊息氣泡設定 */
     .msg {
       max-width: 75%;
       padding: 8px 12px;
@@ -97,22 +85,11 @@
       animation: fadeIn 0.3s ease-in-out;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .msg.received {
-      background: #202C33;
-      color: #E9EDEF;
-      align-self: flex-start;
-      border-top-left-radius: 0;
-    }
-    .msg.sent {
-      background: #005C4B;
-      color: #E9EDEF;
-      align-self: flex-end;
-      border-top-right-radius: 0;
-    }
+    .msg.received { background: #202C33; color: #E9EDEF; align-self: flex-start; border-top-left-radius: 0; }
+    .msg.sent { background: #005C4B; color: #E9EDEF; align-self: flex-end; border-top-right-radius: 0; }
     .msg.system {
       background: rgba(31, 44, 52, 0.9);
-      color: #FFD02C; /* 系統提示顏色 */
+      color: #8696A0;
       align-self: center;
       font-size: 13px;
       text-align: center;
@@ -122,8 +99,10 @@
       margin-top: 10px;
       margin-bottom: 15px;
     }
-
-    /* 正在輸入狀態 */
+    .msg.system-danger {
+      color: #FF5252;
+      font-weight: bold;
+    }
     #typing-indicator {
       color: #8696A0;
       font-size: 13px;
@@ -132,8 +111,6 @@
       display: none;
       font-style: italic;
     }
-
-    /* 玩家選項區域 (取代打字鍵盤) */
     #choices-container {
       background: #1F2C34;
       padding: 15px;
@@ -159,13 +136,11 @@
 <body>
 
   <div id="phone">
-    <!-- 狀態列 -->
     <div id="status-bar">
       <span id="clock">12:38</span>
-      <span>📵 無網絡訊號 &nbsp;&nbsp; 📶 Wi-Fi &nbsp;&nbsp; 🔋 22%</span>
+      <span>📵 無訊號 &nbsp;&nbsp; 📶 FREE_WIFI_09 &nbsp;&nbsp; 🔋 22%</span>
     </div>
 
-    <!-- WhatsApp 頭部 -->
     <div id="wa-header">
       <div class="avatar">?</div>
       <div class="info">
@@ -174,150 +149,215 @@
       </div>
     </div>
 
-    <!-- 聊天記錄區 -->
     <div id="chat-bg">
-      <div class="msg system">【系統提示】：你參加了一場 Speed Dating 派對，喝下一杯飲料後便不省人事。當你醒來時，發現自己被困在一個黑暗的箱子裡。</div>
+      <div class="msg system">【系統】：一陣劇烈的暈眩後，你從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。你的胸腔感到沉重的壓迫，每一次呼吸都極度費力。</div>
     </div>
     
     <div id="typing-indicator">未知號碼 正在輸入...</div>
-
-    <!-- 選擇區 -->
     <div id="choices-container"></div>
   </div>
 
   <script>
-    // 時鐘更新功能
     function updateClock() {
       const now = new Date();
-      let hours = now.getHours();
-      let minutes = now.getMinutes();
-      document.getElementById('clock').innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      document.getElementById('clock').innerText = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     }
     setInterval(updateClock, 60000);
     updateClock();
 
-    // 遊戲劇本資料庫 (JSON格式，方便後續擴展)
+    // 狀態記錄 (用於判斷是否已經探索過某個區域)
+    let gameState = {
+      exploredLeft: false,
+      exploredRight: false,
+      foundLighter: false,
+      foundNail: false
+    };
+
     const storyData = {
-      // 序幕
       start: {
-        messages: [
-          "你終於醒了。",
-          "別出聲，他們就在附近。你現在被困在一個木箱裡，被埋在淺土下。",
-          "你的氧氣只夠撐10分鐘。"
-        ],
+        messages: ["你醒了。", "你的心跳聲大到連我在上面都聽得見。"],
         choices: [
-          { text: "你是誰？我這是在哪？", nextNode: "ask_who" },
-          { text: "救命！快報警！", nextNode: "death_shout" }
+          { text: "你是誰？！救命啊！！！", nextNode: "panic_shout" },
+          { text: "這是在哪裡？你想怎樣？", nextNode: "ask_calm" },
+          { text: "（保持沉默，冷靜觀察）", nextNode: "stay_silent" }
         ]
       },
-      ask_who: {
-        messages: [
-          "我是誰不重要，我是唯一能幫你活下去的人。",
-          "木箱頂部有一塊鬆動的木板，馬上試著推開它！"
-        ],
+      panic_shout: {
+        messages: ["🔊 [語音訊息 0:04]"],
+        system: "【系統】：語音訊息中傳來你剛剛聲嘶力竭的慘叫聲，但伴隨著從外部錄製的沉悶回音。厚重的泥土完全吞噬了你的聲音。",
+        messagesAfter: ["你每尖叫一次，就消耗了原本能讓你多活兩分鐘的氧氣。", "繼續叫，我喜歡聽。"],
+        choices: [{ text: "不...我不叫了。救我。", nextNode: "explore_hub" }]
+      },
+      ask_calm: {
+        messages: ["我是你現在唯一能抓住的繩子。", "別浪費力氣打字，聽我說。你現在被埋在地下，氧氣有限。"],
+        choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
+      },
+      stay_silent: {
+        messages: ["很好，你比上一件『垃圾』冷靜多了。", "你現在被埋在地下，氧氣有限。聽從我的指示，你才有機會活下來。"],
+        choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
+      },
+      
+      // 探索迴圈
+      explore_hub: {
+        messages: ["用你的雙手，確認你周遭的環境。不要亂動，動作要小。"],
+        getChoices: () => {
+          let choices = [];
+          if (!gameState.exploredLeft) choices.push({ text: "摸索左側的木板", nextNode: "explore_left" });
+          if (!gameState.exploredRight) choices.push({ text: "摸索右側的角落", nextNode: "explore_right" });
+          if (!gameState.foundLighter) choices.push({ text: "摸索自己的西裝外套", nextNode: "explore_pocket" });
+          if (gameState.foundLighter && !gameState.foundNail) choices.push({ text: "摸索木箱底部的夾縫", nextNode: "explore_bottom" });
+          if (gameState.foundNail) choices.push({ text: "用生鏽鐵釘撬頭頂的木板！", nextNode: "footsteps_approach" });
+          return choices;
+        }
+      },
+      explore_left: {
+        system: "【系統】：你摸到粗糙的木頭紋理，接著是指甲刮過木板的深深凹槽。你的指腹沾上了某種黏稠、帶有鐵鏽味的半乾液體。順著凹槽，你發現那不是隨機的抓痕，而是有人用指甲刻出來的字...",
+        systemDanger: "「不要相信手機裡的人」",
+        action: () => { gameState.exploredLeft = true; },
+        messages: ["你在發抖。摸到了什麼嗎？"],
+        choices: [{ text: "沒...沒有。", nextNode: "explore_hub" }]
+      },
+      explore_right: {
+        system: "【系統】：你摸到一塊柔軟的布料。拉扯時，發現那是一個破損的西裝口袋，裡面裝著一個冰冷的物體。手機微弱的光線照亮了它——那是一截已經發黑、戴著純金婚戒的斷指。",
+        action: () => { gameState.exploredRight = true; },
+        messages: ["那個戒指原本挺值錢的，可惜被土弄髒了。繼續找。"],
+        choices: [{ text: "（強忍嘔吐感繼續摸索）", nextNode: "explore_hub" }]
+      },
+      explore_pocket: {
+        system: "【系統】：你在自己的外套內袋裡，摸到了一個金屬質感的金屬打火機。",
+        action: () => { gameState.foundLighter = true; },
+        messages: ["你在猶豫什麼？"],
         choices: [
-          { text: "用力推開木板", nextNode: "escape_success" },
-          { text: "四處摸索尋找工具", nextNode: "death_oxygen" }
+          { text: "點燃打火機，我想看清這裡！", nextNode: "lighter_death" },
+          { text: "（把打火機收起來，繼續在黑暗中摸索）", nextNode: "explore_hub" }
         ]
       },
-      death_shout: {
-        messages: ["蠢貨！你太大聲了！"],
-        system: "你聽見上方傳來沉重的腳步聲。泥土被迅速挖開，木箱被撬開。一道刺眼的光芒後，你感到頸部一陣劇痛...\n\n【結局：死於非命】",
+      lighter_death: {
+        messages: ["熄滅它！你這個蠢貨！！！"],
+        system: "【結局：作繭自縛】\n火光亮起的瞬間，狹小空間內僅存的氧氣被迅速抽乾。幽藍的火焰閃爍了兩下便熄滅，你的肺部如遭火燒，在劇烈的抽搐與窒息中，意識徹底陷入黑暗。",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
-      death_oxygen: {
-        messages: ["你沒有時間了，別找了！"],
-        system: "木箱空間狹小，你四處摸索耗費了太多氧氣。你感到呼吸越來越困難，意識逐漸模糊...\n\n【結局：窒息而死】",
+      explore_bottom: {
+        system: "【系統】：你忍受著木刺扎入指甲縫的劇痛，硬生生地從木板接縫中拔出了一根又長又粗的「生鏽長鐵釘」。",
+        action: () => { gameState.foundNail = true; },
+        messages: ["好極了。現在，對準你正上方那塊有水漬的木板邊緣..."],
+        choices: [{ text: "準備撬開木板", nextNode: "explore_hub" }]
+      },
+
+      // 憋氣高潮
+      footsteps_approach: {
+        system: "【系統】：木箱頂部突然傳來沉悶的重壓感，沙土從木板的縫隙中簌簌落下，掉進你的眼睛和嘴裡。上方傳來了極其沉重的腳步聲...",
+        messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
+        choices: [
+          { text: "（死命憋氣）", nextNode: "breath_1" },
+          { text: "（忍不住喘氣）", nextNode: "breath_death" }
+        ]
+      },
+      breath_1: {
+        system: "【系統】：沉重的腳步聲就在你鼻尖正上方停下。泥土壓得木板嘎吱作響。你的肺部開始發熱。",
+        messages: ["（對方沒有傳送訊息，螢幕上的「正在輸入」閃爍不定）"],
+        choices: [
+          { text: "（繼續憋氣，咬緊牙關）", nextNode: "breath_2" },
+          { text: "（大口喘氣）", nextNode: "breath_death" }
+        ]
+      },
+      breath_2: {
+        system: "【系統】：你感覺眼冒金星，胸腔彷彿要炸裂開來。上方傳來鐵鍬拍打泥土的聲音，一下、兩下...",
+        messages: ["...撐住。"],
+        choices: [
+          { text: "（死不張口，眼前發黑）", nextNode: "breath_success" },
+          { text: "（真的撐不住了...）", nextNode: "breath_death" }
+        ]
+      },
+      breath_death: {
+        system: "【結局：無處可逃】\n你猛地吸了一口氣，劇烈的咳嗽聲在木箱內迴盪。上方的腳步聲瞬間停止。接著是鐵鍬瘋狂挖開泥土的聲音，一陣刺眼的強光照入，伴隨著電鋸震耳欲聾的轟鳴聲...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
-      // 第一章
-      escape_success: {
-        messages: ["很好，用盡全力！"],
-        system: "【第一章】\n你咬緊牙關，雙手用力往上推。木板發出刺耳的斷裂聲，冰冷潮濕的泥土瞬間掉落在你臉上和嘴裡。你拼命扒開泥土，掙扎著爬出這個狹窄的空間。\n\n看起來像是一個廢棄的地下室，空氣中瀰漫著霉味和鐵鏽味。",
-        choices: [
-          { text: "咳咳...我出來了。接下來呢？", nextNode: "chap1_start" }
-        ]
+      breath_success: {
+        system: "【系統】：腳步聲慢慢走遠，直到完全消失。你終於可以貪婪地吸入帶著霉味的微薄空氣。",
+        messages: ["他走了。你還有最後三十秒。", "用那根鐵釘，撬開你鼻子正上方那塊木板！拼死撬！"],
+        choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
+      },
+      pry_board: {
+        system: "【第一章：鐵鏽與血】\n鐵釘逐漸彎曲，你的虎口被磨得血肉模糊。在最後一次用力時，「啪」的一聲，鐵釘斷成了兩截。就在這最絕望的瞬間，木板也發出令人牙酸的斷裂聲。冰冷的爛泥如同瀑布般傾瀉而下，瞬間掩埋了你的口鼻！",
+        choices: [{ text: "不顧一切往上扒土！！！", nextNode: "chap1_start" }]
       },
       chap1_start: {
-        messages: [
-          "你出來了。這只是第一步。",
-          "看看四周，角落有一個生鏽的鐵櫃和一扇鎖著的鐵門。",
-          "現在，去檢查鐵櫃。"
-        ],
-        choices: [
-          { text: "為什麼我要聽你的？", nextNode: "chap1_why" },
-          { text: "去檢查鐵櫃", nextNode: "chap1_cabinet" },
-          { text: "去檢查鐵門", nextNode: "chap1_door" }
-        ]
-      },
-      chap1_why: {
-        messages: ["因為那個把你活埋的人，隨時會回來。你想死的話可以隨便亂跑。"],
-        choices: [
-          { text: "好吧，我去檢查鐵櫃", nextNode: "chap1_cabinet" },
-          { text: "我偏要去檢查鐵門", nextNode: "chap1_door" }
-        ]
-      },
-      chap1_cabinet: {
-        messages: ["打開它，小心點。"],
-        system: "（目前為 v0.1 測試版，劇情待續...）",
-        choices: [{ text: "返回重玩", nextNode: "restart" }]
-      },
-      chap1_door: {
-        messages: ["別碰鐵門！上面裝了警報器！"],
-        system: "你不顧警告拉動鐵門的把手，刺耳的警報聲瞬間響徹整個地下室...\n\n【結局：觸發警報，被抓回】",
-        choices: [{ text: "重新開始", nextNode: "restart" }]
+        system: "【系統】：你拼命扒開泥土，掙扎著爬出淺坑。你身處一個陰冷的廢棄地下室，天花板的鎢絲燈閃爍不定。",
+        messages: ["看來你命挺大的。", "但這只是他為你準備的『遊樂場』。他出去處理『上一件垃圾』了，你大概有 15 分鐘。"],
+        choices: [{ text: "（v0.2 劇情暫停於此，待續...）", nextNode: "restart" }]
       }
     };
 
-    // 遊戲引擎邏輯
     const chatBg = document.getElementById('chat-bg');
     const choicesContainer = document.getElementById('choices-container');
     const typingIndicator = document.getElementById('typing-indicator');
-
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    function scrollToBottom() {
-      chatBg.scrollTop = chatBg.scrollHeight;
-    }
+    function scrollToBottom() { chatBg.scrollTop = chatBg.scrollHeight; }
 
-    // 播放指定節點的對話
     async function playNode(nodeId) {
-      choicesContainer.innerHTML = ''; // 清空選項
+      choicesContainer.innerHTML = '';
       const node = storyData[nodeId];
 
-      // 模擬對方傳送訊息的延遲與打字動畫
-      for (let msg of node.messages) {
-        typingIndicator.style.display = 'block';
-        document.getElementById('online-status').innerText = '正在輸入...';
-        scrollToBottom();
-        
-        // 隨機打字延遲 1.5秒 到 2.5秒
-        await sleep(1500 + Math.random() * 1000); 
-        
-        typingIndicator.style.display = 'none';
-        document.getElementById('online-status').innerText = '在線上';
+      if (node.action) node.action(); // 執行狀態更新
 
-        const div = document.createElement('div');
-        div.className = 'msg received';
-        div.innerText = msg;
-        chatBg.appendChild(div);
-        scrollToBottom();
-        
-        await sleep(500); // 訊息間的小停頓
-      }
-
-      // 如果有系統提示（如旁白、結局或動作描述）
+      // 播放系統提示 (如果有)
       if (node.system) {
-        await sleep(800);
         const sysDiv = document.createElement('div');
         sysDiv.className = 'msg system';
         sysDiv.innerText = node.system;
         chatBg.appendChild(sysDiv);
         scrollToBottom();
+        await sleep(1000);
+      }
+      if (node.systemDanger) {
+        const dangerDiv = document.createElement('div');
+        dangerDiv.className = 'msg system system-danger';
+        dangerDiv.innerText = node.systemDanger;
+        chatBg.appendChild(dangerDiv);
+        scrollToBottom();
+        await sleep(1000);
       }
 
-      // 顯示玩家選項
-      node.choices.forEach(choice => {
+      // 播放對話
+      if (node.messages) {
+        for (let msg of node.messages) {
+          typingIndicator.style.display = 'block';
+          document.getElementById('online-status').innerText = '正在輸入...';
+          scrollToBottom();
+          
+          await sleep(1200 + Math.random() * 800); 
+          
+          typingIndicator.style.display = 'none';
+          document.getElementById('online-status').innerText = '在線上';
+
+          const div = document.createElement('div');
+          div.className = 'msg received';
+          div.innerText = msg;
+          chatBg.appendChild(div);
+          scrollToBottom();
+          await sleep(500);
+        }
+      }
+
+      // 播放對話後的系統提示 (用於某些特殊中斷)
+      if (node.messagesAfter) {
+        for (let msg of node.messagesAfter) {
+          typingIndicator.style.display = 'block';
+          await sleep(1000); 
+          typingIndicator.style.display = 'none';
+          const div = document.createElement('div');
+          div.className = 'msg received';
+          div.innerText = msg;
+          chatBg.appendChild(div);
+          scrollToBottom();
+        }
+      }
+
+      // 顯示選項
+      const choices = node.getChoices ? node.getChoices() : node.choices;
+      choices.forEach(choice => {
         const btn = document.createElement('div');
         btn.className = 'choice-btn';
         btn.innerText = choice.text;
@@ -327,33 +367,28 @@
       scrollToBottom();
     }
 
-    // 處理玩家點擊選項
     async function handleChoice(choice) {
-      choicesContainer.innerHTML = ''; // 點擊後立即隱藏選項
+      choicesContainer.innerHTML = ''; 
       
-      // 處理重新開始的特殊邏輯
       if (choice.nextNode === 'restart') {
-        chatBg.innerHTML = '<div class="msg system">【系統提示】：你參加了一場 Speed Dating 派對，喝下一杯飲料後便不省人事。當你醒來時，發現自己被困在一個黑暗的箱子裡。</div>';
-        await sleep(500);
+        gameState = { exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false };
+        chatBg.innerHTML = '';
         playNode('start');
         return;
       }
 
-      // 顯示玩家傳送出去的訊息
       const div = document.createElement('div');
       div.className = 'msg sent';
       div.innerText = choice.text;
       chatBg.appendChild(div);
       scrollToBottom();
 
-      await sleep(1000); // 等待一下再載入對方回覆
+      await sleep(800);
       playNode(choice.nextNode);
     }
 
-    // 遊戲啟動
-    setTimeout(() => {
-      playNode('start');
-    }, 1500);
+    // 啟動遊戲
+    setTimeout(() => { playNode('start'); }, 1000);
 
   </script>
 </body>
