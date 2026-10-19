@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v0.8</title>
+  <title>WhatsApp Escape - v0.9 Chapter 3 Update</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -74,7 +74,6 @@
       100% { opacity: 0; }
     }
 
-    /* 圖片彈出顯示層 (Image Modal) */
     #image-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85); display: none; justify-content: center;
@@ -88,9 +87,10 @@
     #status-bar {
       height: 25px; background: #1F2C34; color: white; display: flex;
       justify-content: space-between; padding: 5px 15px 0; align-items: center;
-      font-size: 12px; font-weight: bold; z-index: 20;
+      font-size: 11px; font-weight: bold; z-index: 20;
     }
     #death-counter { color: #FF5252; }
+    #elevator-status { color: #FFD02C; display: none; }
     
     #wa-header {
       background: #1F2C34; color: #E9EDEF; padding: 10px 15px; display: flex;
@@ -136,6 +136,7 @@
     }
     .choice-btn:active { background: #384B57; }
     .choice-btn.hack-btn { color: #FF5252; border-color: #FF5252; }
+    .choice-btn.action-btn { color: #FFD02C; border-color: #FFD02C; background: #332B00; }
     
     .input-group { display: flex; gap: 10px; }
     .input-group input {
@@ -147,7 +148,6 @@
 </head>
 <body>
 
-  <!-- 音頻元素 -->
   <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
   <audio id="sfx-footsteps" src="soundeffect02.mp3" loop preload="auto"></audio>
 
@@ -160,13 +160,13 @@
   <div id="phone">
     <div id="glitch-overlay"></div>
 
-    <!-- 圖片彈出視窗 -->
     <div id="image-modal">
       <img id="modal-img" src="" alt="提示圖片">
     </div>
 
     <div id="status-bar">
       <span id="clock">12:38</span>
+      <span id="elevator-status">🛗 B1層 (下墜中)</span>
       <span id="death-counter">💀 0</span>
       <span>📵 無訊號 &nbsp; 🔋 22%</span>
     </div>
@@ -201,7 +201,9 @@
     let gameState = {
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
       exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false, knownClue1: false,
-      trusted04: false
+      trusted04: false,
+      elevatorFloor: 1, // 電梯樓層
+      elevatorDamage: 0 // 電梯受損度
     };
 
     function t(text) {
@@ -210,7 +212,6 @@
       return text.replace(/\{name\}/g, nameToUse);
     }
 
-    // 音效播放控制
     function playSentSfx() {
       const sfx = new Audio('soundeffect03.mp3');
       sfx.play().catch(e => {});
@@ -223,11 +224,10 @@
 
     function stopFootsteps() {
       const steps = document.getElementById('sfx-footsteps');
-      steps.pause();
-      steps.currentTime = 0;
+      steps.pause(); steps.currentTime = 0;
     }
 
-    // 彈出圖片控制 (image01: 屠夫震動, image02: 密碼鎖)
+    // 已修改圖片副檔名為 .jpg
     function popupImage(imgSrc, durationMs = 3000, isJumpscare = false) {
       const modal = document.getElementById('image-modal');
       const img = document.getElementById('modal-img');
@@ -260,6 +260,12 @@
       phone.classList.add('shake');
       glitch.classList.add('active');
       if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
+    }
+
+    function updateElevatorUI(floor, statusText) {
+      const el = document.getElementById('elevator-status');
+      el.style.display = 'inline';
+      el.innerText = `🛗 B${floor}層 (${statusText})`;
     }
 
     let activeChat = 'unknown'; 
@@ -380,7 +386,7 @@
       footsteps_approach: {
         chat: 'unknown',
         system: "【系統】：木箱頂部傳來沉悶重壓感。上方傳來了極其沉重的腳步聲...",
-        action: () => { playFootsteps(); }, // 自動觸發腳步聲
+        action: () => { playFootsteps(); },
         messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
         choices: [
           { text: "（死命憋氣）", nextNode: "breath_1" },
@@ -407,13 +413,13 @@
       },
       breath_death: {
         chat: 'unknown',
-        action: () => { popupImage('image01.jpeg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { popupImage('image01.jpg', 2500, true); }, // 更正為 .jpg
         system: "【結局：無處可逃】\n咳嗽聲曝露了位置。一陣刺眼的強光照入，伴隨著電鋸的轟鳴聲...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       breath_success: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); }, // 腳步聲停止
+        action: () => { stopFootsteps(); },
         system: "【系統】：腳步聲遠去。{name}終於可以貪婪地吸入空氣。",
         messages: ["他走了。{name}還有最後三十秒。", "用那根鐵釘，拼死撬開正上方那塊木板！"],
         choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
@@ -471,7 +477,7 @@
         chat: 'unknown',
         system: () => {
           if (gameState.hasHook) return "【系統】：拿出生鏽鐵勾成功勾出一張【電子房卡】！";
-          return "【系統】：排水口深處有東西反光，但裡面有鋒利鐵絲！需要某種工具。";
+          return "【系統】：排水口深處有東西反光，但裡面有鋒利鐵絲！你需要某種工具。";
         },
         action: () => {
           if (gameState.hasHook) gameState.hasKeycard = true;
@@ -486,7 +492,7 @@
       chap1_cabinet: {
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
-        action: () => { popupImage('image02.jpg', 3000); }, // 顯示密碼鎖圖片
+        action: () => { popupImage('image02.jpg', 3000); }, // 更正為 .jpg
         messages: ["想想泥坑留下的數字(04)，加上派對號碼(27)。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
@@ -505,7 +511,7 @@
       },
       chap1_door_final: {
         chat: 'unknown',
-        action: () => { playFootsteps(); }, // 屠夫逼近的腳步聲
+        action: () => { playFootsteps(); },
         system: "【系統】：正當舉起手準備刷卡時，手機突然狂震！",
         messages: ["等等！！！", "別刷卡！！！", "馬上找地方躲起來！！！"],
         systemDanger: "【系統】：門外傳來金屬拖行聲與腳步聲，停在鐵門外。",
@@ -516,13 +522,13 @@
       },
       death_door_rush: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 更正為 .jpg
         system: "【結局：羊入虎口】\n門被拉開，戴著豬頭面具的壯漢手持消防斧劈下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       hide_cabinet: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); }, // 腳步聲停止
+        action: () => { stopFootsteps(); },
         system: "【系統】：{name}鑽進鐵櫃。屠夫扔下一個滴血的黑色塑膠袋後離開。",
         choices: [{ text: "（死死捂住自己的嘴巴）", nextNode: "chap1_end" }]
       },
@@ -602,7 +608,6 @@
         ]
       },
 
-      // 分歧 A：標本室
       chap2_go_specimen: {
         chat: 'unknown',
         system: "【系統】：你進入『標本室』。",
@@ -618,7 +623,7 @@
       },
       chap2_specimen_panic: {
         chat: 'unknown',
-        action: () => { playFootsteps(); }, // 電鋸與腳步聲
+        action: () => { playFootsteps(); },
         systemDanger: "【系統】：門外傳來電鋸轟鳴聲！屠夫正在切割木門！",
         messages: ["屠夫發現你了！密碼是『1031』！快輸入密碼開門！"],
         choices: [{ text: "（手機震動！04 傳來訊息！）", nextNode: "chap2_04_final_warning", isHack: true }]
@@ -637,17 +642,16 @@
         action: () => { stopFootsteps(); },
         system: "【系統】：輸入 1031，鐵閘門彈開！你衝進去反鎖了門。",
         messages: ["你活下來了。"],
-        messagesAfter: ["門後面確實是貨運電梯。電梯正在下降，準備迎接第三章吧。"],
-        choices: [{ text: "（第二章 完結）", nextNode: "chap3_coming_soon" }]
+        messagesAfter: ["門後面確實是貨運電梯。衝進電梯，準備下降！"],
+        choices: [{ text: "衝進老舊貨運電梯！", nextNode: "chap3_start" }]
       },
       chap2_hide_cabinet_death: {
         chat: '04',
-        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 更正為 .jpg
         system: "【結局：被辜負的信任】\n屠夫劈碎木門，徑直走過來掀開櫃子。\n04：『對不起...謝謝你替我死。』\n電鋸無情地落下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
-      // 分歧 B：鍋爐房
       chap2_go_boiler: {
         chat: '04',
         system: "【系統】：你走進『廢棄鍋爐房』。",
@@ -675,7 +679,7 @@
       },
       chap2_boiler_panic: {
         chat: 'unknown',
-        action: () => { playFootsteps(); }, // 屠夫靠近腳步聲
+        action: () => { playFootsteps(); },
         systemHack: "【系統】：04 斷開連線，視窗切換回『未知號碼』。",
         messages: ["我警告過你的，屠夫已經進入鍋爐房了。"],
         systemDanger: "【系統】：屠夫拿著手電筒照向通風口，正伸手抓你的腳踝！",
@@ -686,7 +690,7 @@
       },
       chap2_boiler_death: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 更正為 .jpg
         system: "【結局：作繭自縛】\n捕獸夾咬碎手臂，鋼筋從上方貫穿背部...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
@@ -695,12 +699,141 @@
         action: () => { stopFootsteps(); },
         system: "【系統】：你一腳踢中屠夫眼窩，重重摔出通風口。",
         messages: ["衝進旁邊紅色的維修電梯，按下向下的按鈕。"],
-        choices: [{ text: "衝進電梯，按下按鈕！(第二章 完)", nextNode: "chap3_coming_soon" }]
+        choices: [{ text: "衝進維修電梯！", nextNode: "chap3_start" }]
       },
 
-      chap3_coming_soon: {
+      // ==================== 【第三章：深淵升降機】 ====================
+      chap3_start: {
         chat: 'unknown',
-        system: "【系統提示】：恭喜您完成《WhatsApp Escape》第一、二章體驗！\n\n感謝遊玩！",
+        system: "【第三章：深淵升降機】\n『哐當！！！』重型鐵門在{name}背後猛然合上。這是一個約莫兩米見方的全金屬貨運電梯，天花板掛著一盞泛著幽黃死光的鎢絲燈。空氣中充斥著焦臭與潤滑油味。",
+        action: () => { 
+          updateElevatorUI(1, "下墜中");
+          triggerGlitchAndVibrate();
+        },
+        messages: [
+          "歡迎來到遊戲的『高速公路』。",
+          "這部電梯直通地下百米的『地下核心』。但屠夫絕對不會眼睜睜看著你離開。"
+        ],
+        choices: [{ text: "這電梯搖晃得太厲害了！而且速度越來越快！", nextNode: "chap3_descent_panic" }]
+      },
+
+      chap3_descent_panic: {
+        chat: 'unknown',
+        system: "【系統】：『咔嚓...咔嚓...』天花板上方傳來粗暴的金屬磨擦聲。電梯頂部的纜線正承受著不正常的巨響。狀況欄顯示：電梯已下墜至 B2 層。",
+        action: () => { updateElevatorUI(2, "速度過快"); },
+        messages: [
+          "冷靜點。控制面板上有緊急煞車按鈕，但現在千萬別按。",
+          "如果在鋼纜還沒完全斷裂前手動煞車，反作用力會直接把電梯箱體撕碎。"
+        ],
+        choices: [{ text: "（突然！天花板傳來一陣劇烈的重壓衝擊！）", nextNode: "chap3_roof_impact" }]
+      },
+
+      chap3_roof_impact: {
+        chat: 'unknown',
+        action: () => { 
+          updateElevatorUI(3, "⚠️ 頂部遭襲");
+          playFootsteps(); 
+          popupImage('image01.jpg', 1500, true); // 更正為 .jpg
+        },
+        systemDanger: "【警告】：『砰——！！！』天花板傳來沉重的撞擊聲！金屬頂板被整整砸下了一個凹坑！泥土與鮮血順著接縫順流而下，滴在{name}的臉頰上！",
+        messages: [
+          "該死！他追上來了！他跳上了電梯頂部！",
+          "他手裡有消防斧，他在砍斷主鋼纜！"
+        ],
+        choices: [
+          { text: "拿生鏽長鐵勾往天花板縫隙猛刺！", nextNode: "chap3_fight_hook", isAction: true },
+          { text: "用打火機去燒頂部的電線短路！", nextNode: "chap3_fight_lighter", isAction: true },
+          { text: "蜷縮在角落，用雙手護住頭部！", nextNode: "chap3_fight_hide", isAction: true }
+        ]
+      },
+
+      chap3_fight_hook: {
+        chat: 'unknown',
+        system: "【系統】：{name}咬緊牙關，雙手握緊生鏽長鐵勾，順著天花板凹陷處的縫隙狠狠向上刺去！『噗嗤！』鐵勾扎進了肉體，上方傳來屠夫極度痛苦的狂怒咆哮聲！鮮血如瀑布般噴灑在{name}身上！",
+        messages: ["幹得好！你刺中他的腳踝了！他暫時鬆手了！"],
+        choices: [{ text: "但電梯纜線『啪』的一聲斷了一根！", nextNode: "chap3_cable_snap_1" }]
+      },
+
+      chap3_fight_lighter: {
+        chat: 'unknown',
+        system: "【結局：電梯爆炸】\n{name}點燃打火機靠近天花板裸露的線路。然而電梯井內積聚了高濃度的易燃油脂蒸汽，火花瞬間引爆了整個電梯箱體！衝天烈焰吞噬了一切...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      chap3_fight_hide: {
+        chat: 'unknown',
+        system: "【結局：天降橫禍】\n{name}選擇蜷縮在角落。天花板被斧頭劈開一個大洞，屠夫從天而降，龐大的軀體直接將{name}壓倒在地。斧光一閃，冰冷的感覺傳遍全身...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      chap3_cable_snap_1: {
+        chat: 'unknown',
+        action: () => { 
+          updateElevatorUI(5, "⚡ 失控自由落體");
+          triggerGlitchAndVibrate(); 
+        },
+        systemDanger: "【極度危險】：『崩！！！』主鋼纜崩斷的巨響在井道內迴盪！電梯瞬間失去控制，進入自由落體狀態！失重感讓{name}整個人浮空撞在天花板上，強烈的嘔吐感湧上喉嚨！",
+        messages: [
+          "{name}！聽著！電梯還有最後一道磁力安全煞車機關！",
+          "現在電梯正以每秒 20 米的速度摔向 B10 層底座！你只有一次機會！",
+          "看到控制面板底部的黃色手動開關了嗎？看準電梯降到 B8 層的瞬間拉下它！提前或太晚拉你都會粉身碎骨！"
+        ],
+        choices: [{ text: "【準備 QTE 操作】盯緊控制面板的顯示屏！", nextNode: "chap3_qte_panel" }]
+      },
+
+      chap3_qte_panel: {
+        chat: 'unknown',
+        action: () => { updateElevatorUI(7, "極速下降中..."); },
+        system: "【系統 QTE】：屏幕上的數字瘋狂狂飆！\n『B6層...』\n『B7層...』\n耳邊全是風聲與金屬摩擦產生的火花刺耳聲！就是現在！",
+        choices: [
+          { text: "【立刻拉下黃色煞車手把！】", nextNode: "chap3_brake_success", isAction: true },
+          { text: "（猶豫了半秒）再等一下...", nextNode: "chap3_brake_late", isAction: true },
+          { text: "【不管了！瘋狂連續敲打面板！】", nextNode: "chap3_brake_early", isAction: true }
+        ]
+      },
+
+      chap3_brake_early: {
+        chat: 'unknown',
+        system: "【結局：高空毀滅】\n你在 B7 層之前過早拉下了煞車！巨大的磁力阻尼在高速下瞬間撕裂了電梯底盤，整個箱體在半空中解體崩塌...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      chap3_brake_late: {
+        chat: 'unknown',
+        system: "【結局：墜毀身亡】\n你猶豫了！電梯以極速重重砸向 B10 層的鋼筋水泥底座！巨大的衝擊力將箱體扁平化...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      chap3_brake_success: {
+        chat: 'unknown',
+        action: () => { 
+          stopFootsteps();
+          updateElevatorUI(9, "緊急煞車成功");
+          triggerGlitchAndVibrate();
+        },
+        system: "【系統】：『吱——！！！！』刺耳到令膜破裂的金屬摩擦聲爆開！火花如雨般傾瀉！巨大的離心力將{name}重重壓在地板上，全身骨頭彷彿都要碎裂！\n\n『咚！！！』\n電梯箱體在距離 B10 底部僅剩半米的地方硬生生懸停住了！鎢絲燈爆裂，四周陷入一片漆黑。",
+        messages: [
+          "……",
+          "還活著嗎，{name}？",
+          "你做到了。你真的從那個怪物手裡活著降到了最底層。"
+        ],
+        choices: [{ text: "咳...咳...上方那個屠夫呢？", nextNode: "chap3_butcher_fate" }]
+      },
+
+      chap3_butcher_fate: {
+        chat: 'unknown',
+        system: "【系統】：天花板上方傳來一陣沉悶的撞擊聲與慘叫。在剛剛劇烈的煞車減速中，位於電梯頂部的屠夫因為沒有抓緊，直接被巨大的慣性甩飛，跌落進了無底的電梯井深處。",
+        messages: [
+          "他摔下去了。即使是他，從那個高度摔下去也絕不可能活命。",
+          "現在，用你身上的磁卡撬開變形的電梯門。",
+          "歡迎來到『地下百米實驗室』。這裡才是所有秘密的源頭..."
+        ],
+        choices: [{ text: "用力推開變形的電梯門，跨出去...", nextNode: "chap3_climax_end" }]
+      },
+
+      chap3_climax_end: {
+        chat: 'unknown',
+        system: "【第三章完結：未完待續】\n{name}喘著粗氣，跨過了滿地的火花與金屬碎片。門外是一條長長的白色無塵走廊，牆上赫然貼著 Speed Dating 派對舉辦方的標誌，以及一張張受害者的相片……\n\nWhatsApp 傳來最後一條訊息：『找回你的記憶吧，{name}。最後的真相就在盡頭。』",
         choices: [{ text: "重新體驗不同的選擇", nextNode: "restart" }]
       }
     };
@@ -811,7 +944,7 @@
         const sendBtn = document.createElement('button');
         sendBtn.innerText = '嘗試開鎖';
         sendBtn.onclick = async () => {
-          playSentSfx(); // 播放發送音效
+          playSentSfx();
           const val = inputField.value;
           await handleSentText("輸入了: " + val);
           if (val === '0427') playNode("chap1_cabinet_success");
@@ -825,7 +958,7 @@
       if (choices) {
         choices.forEach(choice => {
           const btn = document.createElement('div');
-          btn.className = `choice-btn ${choice.isHack ? 'hack-btn' : ''}`;
+          btn.className = `choice-btn ${choice.isHack ? 'hack-btn' : ''} ${choice.isAction ? 'action-btn' : ''}`;
           btn.innerText = t(choice.text);
           btn.onclick = () => handleChoice(choice);
           choicesContainer.appendChild(btn);
@@ -846,8 +979,8 @@
     }
 
     async function handleChoice(choice) {
-      playSentSfx(); // 每當玩家按下選項按鈕，播放 soundeffect03.mp3
-      stopFootsteps(); // 進入下一個階段時，預設先關閉腳步聲 (若下個節點需要腳步聲會由 action 重新觸發)
+      playSentSfx();
+      stopFootsteps();
 
       if (choice.nextNode === 'restart') { 
         sessionStorage.setItem('deathCount', deathCount + 1);
