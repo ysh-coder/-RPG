@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v1.2 Desperate Letter Update</title>
+  <title>WhatsApp Escape - v1.3 Speed Dating Mystery Update</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -206,16 +206,16 @@
       <img id="modal-img" src="" alt="提示圖片">
     </div>
 
-    <!-- 重構：絕望感滿盈且暗藏線索的信件 Modal -->
+    <!-- 信件 Modal (已新增 Speed Dating 世界觀設定) -->
     <div id="letter-modal" onclick="closeLetterModal()">
       <div class="letter-modal-content" onclick="event.stopPropagation()">
         <span class="close-letter-btn" onclick="closeLetterModal()">✖</span>
         <h3>【沾滿血跡的絕望便條】</h3>
         <p>如果你拿到這封信……說明我大概已經死了吧。或者，變成了外面那個怪物的下一具標本。</p>
-        <p>我不甘心。我真的好想回家，我好想念我媽媽……</p>
+        <p>我不甘心。我真的好想回家，我好想念我媽媽……後來我才明白，我們所有人被抓到這裡，全都是因為那一晚的 Speed Dating 派對！那一晚根本不是什麼尋找真愛的約會，而是一個精心設計的獵殺陷阱！我們所有人，從一開始就被盯上了……</p>
         <p>我的雙手已經沒有一片完整的指甲了，全是在木板上抓斷的。黑暗像黏稠的液體一樣壓得我喘不過氣。門外那陣金屬拖在地上的刺耳聲響，每一次響起，我都嚇得發抖，只能咬緊牙關不讓自己叫出來。</p>
         <p>鐵櫃上的密碼鎖是他設下的惡毒嘲弄。他烙在我身上的代號，是我在這個地獄裡的身份……也是這死局的開端。</p>
-        <p>還記得你在那個該死的 Speed Dating 派對上，胸前貼著的那張圓形號碼牌嗎？那曾是我眼裡最後的光。可惜……在這個漆黑的墳墓裡整整挨過了極度絕望的三天三夜後，連那點殘存的希望，也一點一滴地被日夜折磨所扣減了。</p>
+        <p>還記得你在派對上胸前貼著的那張圓形號碼牌嗎？那曾是我眼裡最後的光。可惜……在這個漆黑的墳墓裡整整挨過了極度絕望的三天三夜後，連那點殘存的希望，也一點一滴地被日夜折磨所扣減了。</p>
         <p>如果你能解開這個殘酷的數字，拿走櫃子裡的鐵勾……求你，替我活著逃出去。</p>
         <p style="text-align: right; margin-top: 20px;">—— 絕望的 04 筆</p>
       </div>
@@ -629,7 +629,7 @@
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
         action: () => { popupImage('image02.jpg', 3000); },
-        messages: ["結合信中的線索：04的代號，加上派對貼紙號碼(27)減去囚禁天數(3天)..."],
+        messages: ["結合信中的線索：信中的所有數字，或許是一個逃出的關鍵。"], // 修改為指定提示語句
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
       },
