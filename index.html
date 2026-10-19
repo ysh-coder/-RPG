@@ -486,7 +486,7 @@
       chap1_cabinet: {
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
-        action: () => { popupImage('image02.jpeg', 3000); }, // 顯示密碼鎖圖片
+        action: () => { popupImage('image02.jpg', 3000); }, // 顯示密碼鎖圖片
         messages: ["想想泥坑留下的數字(04)，加上派對號碼(27)。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
@@ -516,7 +516,7 @@
       },
       death_door_rush: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); popupImage('image01.jpeg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
         system: "【結局：羊入虎口】\n門被拉開，戴著豬頭面具的壯漢手持消防斧劈下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
@@ -642,7 +642,7 @@
       },
       chap2_hide_cabinet_death: {
         chat: '04',
-        action: () => { stopFootsteps(); popupImage('image01.jpeg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
         system: "【結局：被辜負的信任】\n屠夫劈碎木門，徑直走過來掀開櫃子。\n04：『對不起...謝謝你替我死。』\n電鋸無情地落下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
@@ -686,7 +686,7 @@
       },
       chap2_boiler_death: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); popupImage('image01.jpeg', 2500, true); }, // 屠夫 Jumpscare
+        action: () => { stopFootsteps(); popupImage('image01.jpg', 2500, true); }, // 屠夫 Jumpscare
         system: "【結局：作繭自縛】\n捕獸夾咬碎手臂，鋼筋從上方貫穿背部...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
