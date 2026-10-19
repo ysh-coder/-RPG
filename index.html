@@ -1,297 +1,360 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>維港轉生 - 序章測試版</title>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Escape - v0.1</title>
+  <style>
+    /* 基礎重置與排版 */
     body {
-        background-color: #111;
-        color: #fff;
-        font-family: 'DotGothic16', monospace, "微軟正黑體";
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        overflow: hidden;
+      margin: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    #game-container {
-        width: 800px;
-        height: 600px;
-        background-color: #000;
-        position: relative;
-        border: 4px solid #555;
-        box-shadow: 0 0 20px #000;
-        display: flex;
-        flex-direction: column;
+
+    /* 手機外框模擬 */
+    #phone {
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      max-height: 850px;
+      background: #0B141A; /* WA 深色模式背景 */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
-    #screen {
-        flex: 1;
-        position: relative;
-        background-color: #000;
-        transition: background-color 0.5s;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 80px; /* For emojis */
-    }
-    #flash-overlay {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: white;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-    }
-    /* Phone UI */
-    #phone-ui {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        width: 200px;
-        height: 350px;
-        background-color: #222;
-        border: 4px solid #444;
-        border-radius: 15px;
-        display: none;
-        flex-direction: column;
-        box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        z-index: 10;
-    }
-    #phone-status {
-        background-color: #075E54;
-        padding: 5px;
-        font-size: 12px;
-        border-bottom: 2px solid #128C7E;
-        display: flex;
-        justify-content: space-between;
-    }
-    #phone-screen {
-        flex: 1;
-        background-color: #000;
-        padding: 10px;
-        font-size: 14px;
-        overflow-y: auto;
-    }
-    /* Dialog Box */
-    #dialog-box {
-        height: 150px;
-        background: linear-gradient(to bottom, #000080, #000033);
-        border-top: 4px solid #fff;
-        padding: 15px;
-        box-sizing: border-box;
-        cursor: pointer;
-        position: relative;
-    }
-    #speaker {
-        color: #ffcc00;
-        font-weight: bold;
-        font-size: 20px;
-        margin-bottom: 10px;
-    }
-    #text {
-        font-size: 18px;
-        line-height: 1.5;
-    }
-    .next-indicator {
-        position: absolute;
-        bottom: 10px;
-        right: 20px;
-        font-size: 20px;
-        animation: blink 1s infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
     
-    /* Battle Menu */
-    #battle-menu {
-        position: absolute;
-        bottom: 160px;
-        left: 20px;
-        display: none;
-        background-color: #000;
-        border: 2px solid #fff;
-        padding: 10px;
-        z-index: 20;
+    @media (min-width: 500px) {
+      #phone { height: 850px; border-radius: 30px; overflow: hidden; border: 8px solid #222; }
     }
-    .battle-btn {
-        display: block;
-        width: 100px;
-        padding: 10px;
-        margin: 5px 0;
-        background: #333;
-        color: #fff;
-        border: 1px solid #fff;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 16px;
+
+    /* 頂部狀態列 */
+    #status-bar {
+      height: 25px;
+      background: #1F2C34;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 15px 0;
+      align-items: center;
+      font-size: 12px;
+      font-weight: bold;
     }
-    .battle-btn:hover { background: #555; }
-    
-    /* WhatsApp UI Overlay */
-    #wa-alert {
-        background-color: #25D366;
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 12px;
-        display: none;
+
+    /* WhatsApp 聯絡人頂部 */
+    #wa-header {
+      background: #1F2C34;
+      color: #E9EDEF;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      z-index: 10;
     }
-</style>
+    #wa-header .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #DFE5E7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #1F2C34;
+      font-size: 20px;
+      margin-right: 12px;
+    }
+    #wa-header .info { display: flex; flex-direction: column; }
+    #wa-header .name { font-weight: 600; font-size: 16px; }
+    #wa-header .status { font-size: 13px; color: #8696A0; }
+
+    /* 聊天室背景與對話區域 */
+    #chat-bg {
+      flex: 1;
+      background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); /* WA 預設塗鴉背景 */
+      background-color: #0B141A;
+      background-blend-mode: overlay;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 訊息氣泡設定 */
+    .msg {
+      max-width: 75%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      line-height: 1.4;
+      position: relative;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .msg.received {
+      background: #202C33;
+      color: #E9EDEF;
+      align-self: flex-start;
+      border-top-left-radius: 0;
+    }
+    .msg.sent {
+      background: #005C4B;
+      color: #E9EDEF;
+      align-self: flex-end;
+      border-top-right-radius: 0;
+    }
+    .msg.system {
+      background: rgba(31, 44, 52, 0.9);
+      color: #FFD02C; /* 系統提示顏色 */
+      align-self: center;
+      font-size: 13px;
+      text-align: center;
+      border-radius: 10px;
+      max-width: 90%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+    /* 正在輸入狀態 */
+    #typing-indicator {
+      color: #8696A0;
+      font-size: 13px;
+      padding-left: 20px;
+      margin-bottom: 10px;
+      display: none;
+      font-style: italic;
+    }
+
+    /* 玩家選項區域 (取代打字鍵盤) */
+    #choices-container {
+      background: #1F2C34;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .choice-btn {
+      background: #2A3942;
+      border: 1px solid #8696A0;
+      color: #00A884;
+      padding: 12px;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: bold;
+    }
+    .choice-btn:active { background: #384B57; }
+  </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="screen">
-        <span id="center-sprite"></span>
-        <div id="flash-overlay"></div>
-        
-        <div id="phone-ui">
-            <div id="phone-status">
-                <span>信號: IIII</span>
-                <span id="hp-display" style="color:red;">電量: 15%</span>
-            </div>
-            <div id="phone-screen">
-                <div id="wa-alert">
-                    <strong>WhatsApp 系統</strong><br>
-                    強制加入聯絡人：傲嬌女騎士
-                </div>
-            </div>
-        </div>
-        
-        <div id="battle-menu">
-            <button class="battle-btn" onclick="battleAction('attack')">攻擊</button>
-            <button class="battle-btn" onclick="battleAction('defend')">防禦 (舉起手機)</button>
-        </div>
+  <div id="phone">
+    <!-- 狀態列 -->
+    <div id="status-bar">
+      <span id="clock">12:38</span>
+      <span>📵 無網絡訊號 &nbsp;&nbsp; 📶 Wi-Fi &nbsp;&nbsp; 🔋 22%</span>
+    </div>
+
+    <!-- WhatsApp 頭部 -->
+    <div id="wa-header">
+      <div class="avatar">?</div>
+      <div class="info">
+        <span class="name">未知號碼</span>
+        <span class="status" id="online-status">在線上</span>
+      </div>
+    </div>
+
+    <!-- 聊天記錄區 -->
+    <div id="chat-bg">
+      <div class="msg system">【系統提示】：你參加了一場 Speed Dating 派對，喝下一杯飲料後便不省人事。當你醒來時，發現自己被困在一個黑暗的箱子裡。</div>
     </div>
     
-    <div id="dialog-box" onclick="advanceStory()">
-        <div id="speaker"></div>
-        <div id="text">點擊開始測試...</div>
-        <div class="next-indicator">▼</div>
-    </div>
-</div>
+    <div id="typing-indicator">未知號碼 正在輸入...</div>
 
-<script>
-    let step = 0;
-    let hp = 15;
-    let inBattle = false;
+    <!-- 選擇區 -->
+    <div id="choices-container"></div>
+  </div>
 
-    const story = [
-        // Scene 1
-        { speaker: '主角 OS', text: '黑雨加十號風球，老闆竟然話「風更」有雙倍人工...', bg: '#111', sprite: '🌧️' },
-        { speaker: '主角 OS', text: '連續 OT 咗 72 個鐘，我連今期手遊抽老婆嘅保底都未撳……', bg: '#111', sprite: '🌧️' },
-        { speaker: '主角', text: '死啦！大風得滯，部電話飛咗出去啊！我隻驚仲未引繼㗎！！', bg: '#1a2a3a', sprite: '🌪️📱' },
-        { speaker: '系統', text: '（噗通！主角跌入維港）', bg: '#000', sprite: '', flash: true },
-        
-        // Scene 2
-        { speaker: '女神', text: '可憐的靈魂啊，你在原本的世界已經死去了...', bg: '#fff', sprite: '👼', color: '#000' },
-        { speaker: '主角', text: '喂等等先！我部電話呢？！入面有我幾百個G嘅「學習資料」㗎！！', bg: '#fff', sprite: '👼😡', color: '#000' },
-        { speaker: '女神', text: '蛤？電…話？那是甚麼神器？總之，賜予你力量，去吧勇者！', bg: '#fff', sprite: '👼💧', color: '#000' },
-        { speaker: '主角', text: '我唔要做勇者，喂！推我做咩！！', bg: '#fff', sprite: '👼✋', color: '#000' },
-        { speaker: '系統', text: '（強烈白光閃爍）', bg: '#fff', sprite: '', flash: true },
-        
-        // Scene 3
-        { speaker: '主角', text: '（爬起身）咦？部機喺度喎！仲識著mon！', bg: '#2d5a27', sprite: '🌲', showPhone: true },
-        { speaker: '主角', text: '大鑊！！得番 15% 電！呢個荒山野嶺邊度有得叉電啊！！', bg: '#2d5a27', sprite: '🌲' },
-        { speaker: '系統提示', text: '【主線任務】：尋找充電方法，否則電量歸零將會社會性死亡。', bg: '#2d5a27', sprite: '🌲' },
-        
-        // Scene 4
-        { speaker: '系統提示', text: '草叢跳出了一隻發出劈啪聲的怪物！', bg: '#2d5a27', sprite: '⚡👾' },
-        { speaker: '主角', text: '史萊姆？！身上有靜電……難道！', bg: '#2d5a27', sprite: '⚡👾' },
-        { speaker: '系統', text: '進入戰鬥！請選擇行動。', bg: '#2d5a27', sprite: '⚡👾', battle: true },
-        
-        // Scene 5 (Reached after battle)
-        { speaker: '主角', text: '呼，補番啲電。不過 35% 都係冇安全感。', bg: '#2d5a27', sprite: '🌲', hpUpdate: 35 },
-        { speaker: '遠處的少女', text: '呀——！放開我，你們這些低賤的哥布林！', bg: '#2d5a27', sprite: '🌲' },
-        { speaker: '主角', text: '經典嘅英雄救美？但係我得 35% 電，都係扮睇唔到保命要緊。', bg: '#2d5a27', sprite: '🌲' },
-        { speaker: '系統提示', text: '（手機突然震動）', bg: '#2d5a27', sprite: '🌲', waAlert: true },
-        { speaker: '主角', text: '（望向手機）金髮雙馬尾？！正中我性癖！！', bg: '#2d5a27', sprite: '🌲' },
-        { speaker: '主角', text: '咳咳，身為一個有修養嘅香港男士，見死不救係唔啱嘅。', bg: '#2d5a27', sprite: '🌲' },
-        { speaker: '系統提示', text: '【主線任務更新】：第一次英雄救美（靠把口）。<br><br>--- 序章測試結束 ---', bg: '#000', sprite: '🎉' }
-    ];
+  <script>
+    // 時鐘更新功能
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      document.getElementById('clock').innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+    setInterval(updateClock, 60000);
+    updateClock();
 
-    function advanceStory() {
-        if (inBattle || step >= story.length) return;
-        
-        const current = story[step];
-        
-        // Update Text
-        document.getElementById('speaker').innerText = current.speaker;
-        document.getElementById('text').innerHTML = current.text;
-        
-        // Update Visuals
-        document.getElementById('screen').style.backgroundColor = current.bg;
-        document.getElementById('center-sprite').innerText = current.sprite;
-        document.getElementById('dialog-box').style.color = current.color || '#fff';
-        
-        // Flash Effect
-        if (current.flash) {
-            const flash = document.getElementById('flash-overlay');
-            flash.style.opacity = 1;
-            setTimeout(() => flash.style.opacity = 0, 100);
-        }
-        
-        // Show Phone UI
-        if (current.showPhone) {
-            document.getElementById('phone-ui').style.display = 'flex';
-        }
-        
-        // HP Update
-        if (current.hpUpdate) {
-            updateHP(current.hpUpdate);
-        }
-        
-        // WhatsApp Alert
-        if (current.waAlert) {
-            document.getElementById('wa-alert').style.display = 'block';
-        }
-        
-        // Battle Trigger
-        if (current.battle) {
-            inBattle = true;
-            document.getElementById('battle-menu').style.display = 'block';
-            return; // Pause story progression for battle
-        }
-        
-        step++;
+    // 遊戲劇本資料庫 (JSON格式，方便後續擴展)
+    const storyData = {
+      // 序幕
+      start: {
+        messages: [
+          "你終於醒了。",
+          "別出聲，他們就在附近。你現在被困在一個木箱裡，被埋在淺土下。",
+          "你的氧氣只夠撐10分鐘。"
+        ],
+        choices: [
+          { text: "你是誰？我這是在哪？", nextNode: "ask_who" },
+          { text: "救命！快報警！", nextNode: "death_shout" }
+        ]
+      },
+      ask_who: {
+        messages: [
+          "我是誰不重要，我是唯一能幫你活下去的人。",
+          "木箱頂部有一塊鬆動的木板，馬上試著推開它！"
+        ],
+        choices: [
+          { text: "用力推開木板", nextNode: "escape_success" },
+          { text: "四處摸索尋找工具", nextNode: "death_oxygen" }
+        ]
+      },
+      death_shout: {
+        messages: ["蠢貨！你太大聲了！"],
+        system: "你聽見上方傳來沉重的腳步聲。泥土被迅速挖開，木箱被撬開。一道刺眼的光芒後，你感到頸部一陣劇痛...\n\n【結局：死於非命】",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+      death_oxygen: {
+        messages: ["你沒有時間了，別找了！"],
+        system: "木箱空間狹小，你四處摸索耗費了太多氧氣。你感到呼吸越來越困難，意識逐漸模糊...\n\n【結局：窒息而死】",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+      // 第一章
+      escape_success: {
+        messages: ["很好，用盡全力！"],
+        system: "【第一章】\n你咬緊牙關，雙手用力往上推。木板發出刺耳的斷裂聲，冰冷潮濕的泥土瞬間掉落在你臉上和嘴裡。你拼命扒開泥土，掙扎著爬出這個狹窄的空間。\n\n看起來像是一個廢棄的地下室，空氣中瀰漫著霉味和鐵鏽味。",
+        choices: [
+          { text: "咳咳...我出來了。接下來呢？", nextNode: "chap1_start" }
+        ]
+      },
+      chap1_start: {
+        messages: [
+          "你出來了。這只是第一步。",
+          "看看四周，角落有一個生鏽的鐵櫃和一扇鎖著的鐵門。",
+          "現在，去檢查鐵櫃。"
+        ],
+        choices: [
+          { text: "為什麼我要聽你的？", nextNode: "chap1_why" },
+          { text: "去檢查鐵櫃", nextNode: "chap1_cabinet" },
+          { text: "去檢查鐵門", nextNode: "chap1_door" }
+        ]
+      },
+      chap1_why: {
+        messages: ["因為那個把你活埋的人，隨時會回來。你想死的話可以隨便亂跑。"],
+        choices: [
+          { text: "好吧，我去檢查鐵櫃", nextNode: "chap1_cabinet" },
+          { text: "我偏要去檢查鐵門", nextNode: "chap1_door" }
+        ]
+      },
+      chap1_cabinet: {
+        messages: ["打開它，小心點。"],
+        system: "（目前為 v0.1 測試版，劇情待續...）",
+        choices: [{ text: "返回重玩", nextNode: "restart" }]
+      },
+      chap1_door: {
+        messages: ["別碰鐵門！上面裝了警報器！"],
+        system: "你不顧警告拉動鐵門的把手，刺耳的警報聲瞬間響徹整個地下室...\n\n【結局：觸發警報，被抓回】",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      }
+    };
+
+    // 遊戲引擎邏輯
+    const chatBg = document.getElementById('chat-bg');
+    const choicesContainer = document.getElementById('choices-container');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    function scrollToBottom() {
+      chatBg.scrollTop = chatBg.scrollHeight;
     }
 
-    function battleAction(action) {
-        const textElem = document.getElementById('text');
-        const speakerElem = document.getElementById('speaker');
+    // 播放指定節點的對話
+    async function playNode(nodeId) {
+      choicesContainer.innerHTML = ''; // 清空選項
+      const node = storyData[nodeId];
+
+      // 模擬對方傳送訊息的延遲與打字動畫
+      for (let msg of node.messages) {
+        typingIndicator.style.display = 'block';
+        document.getElementById('online-status').innerText = '正在輸入...';
+        scrollToBottom();
         
-        if (action === 'attack') {
-            speakerElem.innerText = '主角';
-            textElem.innerText = '你踢了史萊姆一腳，造成 0 點傷害。腳好痛！';
-        } else if (action === 'defend') {
-            speakerElem.innerText = '系統提示';
-            textElem.innerHTML = '主角高舉手機！<br>雷史萊姆的閃電劈在手機上，【電量 + 20%】！';
-            updateHP(35);
-            
-            setTimeout(() => {
-                speakerElem.innerText = '系統提示';
-                textElem.innerText = '雷史萊姆被你的「毒撚癡漢氣場」嚇跑了！戰鬥結束。';
-                document.getElementById('battle-menu').style.display = 'none';
-                inBattle = false;
-                step++; // Move to Scene 5
-            }, 2000);
-        }
+        // 隨機打字延遲 1.5秒 到 2.5秒
+        await sleep(1500 + Math.random() * 1000); 
+        
+        typingIndicator.style.display = 'none';
+        document.getElementById('online-status').innerText = '在線上';
+
+        const div = document.createElement('div');
+        div.className = 'msg received';
+        div.innerText = msg;
+        chatBg.appendChild(div);
+        scrollToBottom();
+        
+        await sleep(500); // 訊息間的小停頓
+      }
+
+      // 如果有系統提示（如旁白、結局或動作描述）
+      if (node.system) {
+        await sleep(800);
+        const sysDiv = document.createElement('div');
+        sysDiv.className = 'msg system';
+        sysDiv.innerText = node.system;
+        chatBg.appendChild(sysDiv);
+        scrollToBottom();
+      }
+
+      // 顯示玩家選項
+      node.choices.forEach(choice => {
+        const btn = document.createElement('div');
+        btn.className = 'choice-btn';
+        btn.innerText = choice.text;
+        btn.onclick = () => handleChoice(choice);
+        choicesContainer.appendChild(btn);
+      });
+      scrollToBottom();
     }
 
-    function updateHP(newHP) {
-        hp = newHP;
-        const hpDisplay = document.getElementById('hp-display');
-        hpDisplay.innerText = `電量: ${hp}%`;
-        hpDisplay.style.color = hp > 20 ? 'white' : 'red';
+    // 處理玩家點擊選項
+    async function handleChoice(choice) {
+      choicesContainer.innerHTML = ''; // 點擊後立即隱藏選項
+      
+      // 處理重新開始的特殊邏輯
+      if (choice.nextNode === 'restart') {
+        chatBg.innerHTML = '<div class="msg system">【系統提示】：你參加了一場 Speed Dating 派對，喝下一杯飲料後便不省人事。當你醒來時，發現自己被困在一個黑暗的箱子裡。</div>';
+        await sleep(500);
+        playNode('start');
+        return;
+      }
+
+      // 顯示玩家傳送出去的訊息
+      const div = document.createElement('div');
+      div.className = 'msg sent';
+      div.innerText = choice.text;
+      chatBg.appendChild(div);
+      scrollToBottom();
+
+      await sleep(1000); // 等待一下再載入對方回覆
+      playNode(choice.nextNode);
     }
 
-    // Initialize first click
-    document.getElementById('speaker').innerText = '系統';
-    document.getElementById('text').innerText = '點擊畫面開始遊戲...';
-</script>
+    // 遊戲啟動
+    setTimeout(() => {
+      playNode('start');
+    }, 1500);
+
+  </script>
 </body>
 </html>
