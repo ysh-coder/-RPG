@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v1.0 Audio & BGM Update</title>
+  <title>WhatsApp Escape - v1.1 Hardcore QTE & Letter Update</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -44,7 +44,7 @@
     }
 
     .shake { animation: phoneShake 0.4s ease-in-out; }
-    .heavy-shake { animation: heavyShake 0.2s infinite; }
+    .heavy-shake { animation: heavyShake 0.15s infinite; }
     @keyframes phoneShake {
       0% { transform: translate(0, 0) rotate(0deg); }
       20% { transform: translate(-6px, 4px) rotate(-1deg); }
@@ -54,9 +54,9 @@
       100% { transform: translate(0, 0) rotate(0deg); }
     }
     @keyframes heavyShake {
-      0% { transform: translate(-10px, 10px) scale(1.02); }
-      50% { transform: translate(10px, -10px) scale(0.98); }
-      100% { transform: translate(-10px, 10px) scale(1.02); }
+      0% { transform: translate(-8px, 8px) scale(1.01); }
+      50% { transform: translate(8px, -8px) scale(0.99); }
+      100% { transform: translate(-8px, 8px) scale(1.01); }
     }
 
     #glitch-overlay {
@@ -74,6 +74,7 @@
       100% { opacity: 0; }
     }
 
+    /* 圖片彈出視窗 */
     #image-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85); display: none; justify-content: center;
@@ -82,6 +83,31 @@
     #image-modal img {
       max-width: 85%; max-height: 60%; border-radius: 12px;
       box-shadow: 0 0 25px rgba(255,0,0,0.5); border: 2px solid #555;
+    }
+
+    /* 信件大圖彈出 Modal (宋體字) */
+    #letter-modal {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9); display: none; justify-content: center;
+      align-items: center; z-index: 95; opacity: 0; transition: opacity 0.3s;
+    }
+    .letter-modal-content {
+      font-family: "Songti TC", "Songti SC", "SimSun", "PMingLiU", serif;
+      background: #f4ecd8; color: #2b1d0c; padding: 25px 20px; border-radius: 8px;
+      border: 3px double #8b5a2b; box-shadow: 0 0 20px rgba(0,0,0,0.9);
+      width: 80%; max-height: 75vh; overflow-y: auto; line-height: 1.7; font-size: 15px;
+      position: relative;
+    }
+    .letter-modal-content h3 { text-align: center; margin-top: 0; color: #6b0000; border-bottom: 1px solid #8b5a2b; padding-bottom: 8px; }
+    .close-letter-btn {
+      position: absolute; top: 10px; right: 15px; font-family: sans-serif; font-weight: bold;
+      color: #8b5a2b; cursor: pointer; font-size: 18px;
+    }
+
+    /* QTE 1秒倒數計時條 */
+    #qte-timer-bar {
+      height: 6px; background: #FF5252; width: 100%; display: none;
+      box-shadow: 0 0 10px #FF5252; z-index: 30;
     }
 
     #status-bar {
@@ -121,6 +147,23 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg.received { background: #202C33; color: #E9EDEF; align-self: flex-start; border-top-left-radius: 0; }
     .msg.sent { background: #005C4B; color: #E9EDEF; align-self: flex-end; border-top-right-radius: 0; }
+    
+    /* WhatsApp 圖片訊息氣泡 */
+    .msg-image-bubble {
+      background: #202C33; padding: 6px; border-radius: 8px; max-width: 70%;
+      align-self: flex-start; margin-bottom: 10px; cursor: pointer; border: 1px solid #3b4a54;
+    }
+    .msg-image-thumb {
+      background: #f4ecd8; color: #2b1d0c; font-family: "Songti TC", "SimSun", serif;
+      padding: 12px 10px; font-size: 12px; border-radius: 6px; border: 1px solid #8b5a2b;
+      max-height: 70px; overflow: hidden; position: relative; line-height: 1.3;
+    }
+    .msg-image-thumb::after {
+      content: "🔍 點擊放大閱讀信件"; position: absolute; bottom: 0; left: 0; width: 100%;
+      background: rgba(11, 20, 26, 0.85); color: #00A884; text-align: center;
+      font-size: 11px; padding: 3px 0; font-family: sans-serif; font-weight: bold;
+    }
+
     .msg.system {
       background: rgba(31, 44, 52, 0.9); color: #8696A0; align-self: center; font-size: 13px;
       text-align: left; border-radius: 10px; max-width: 90%; padding: 10px; margin-top: 10px; margin-bottom: 15px;
@@ -148,7 +191,7 @@
 </head>
 <body>
 
-  <!-- 音頻元素 -->
+  <!-- 音源元素 -->
   <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
   <audio id="bgm-butcher" src="bgm02.mp3" loop preload="auto"></audio>
   <audio id="sfx-footsteps" src="soundeffect02.mp3" loop preload="auto"></audio>
@@ -166,6 +209,23 @@
     <div id="image-modal">
       <img id="modal-img" src="" alt="提示圖片">
     </div>
+
+    <!-- 信件放大顯示 Modal -->
+    <div id="letter-modal" onclick="closeLetterModal()">
+      <div class="letter-modal-content" onclick="event.stopPropagation()">
+        <span class="close-letter-btn" onclick="closeLetterModal()">✖</span>
+        <h3>【04留下的血書信件】</h3>
+        <p>致後來的犠牲者：</p>
+        <p>我是第4個被抓來這裡的人（代號04）。如果你讀到這封信，說明我已經逃往管道，或者已經死了...</p>
+        <p>這個鐵櫃裡有能救命的工具，門上掛著四位數密碼鎖。他設置密碼的邏輯很變態：</p>
+        <p><b>【密碼前兩位】</b>：我的受害者代號（<b>04</b>）。<br>
+        <b>【密碼後兩位】</b>：你在 Speed Dating 胸前貼紙上的配對數字（<b>27</b>）減去我們被囚禁的天數（<b>3天</b>）➔ <b>24</b>。</p>
+        <p>合起來的四位數密碼就是：<b>0424</b>。</p>
+        <p>切記！不要相信那個在 WhatsApp 裡指引你的人...</p>
+      </div>
+    </div>
+
+    <div id="qte-timer-bar"></div>
 
     <div id="status-bar">
       <span id="clock">12:38</span>
@@ -205,8 +265,7 @@
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
       exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false, knownClue1: false,
       trusted04: false,
-      elevatorFloor: 1,
-      elevatorDamage: 0
+      elevatorFloor: 1
     };
 
     function t(text) {
@@ -215,16 +274,26 @@
       return text.replace(/\{name\}/g, nameToUse);
     }
 
+    // 信件 Modal 控制
+    function openLetterModal() {
+      const modal = document.getElementById('letter-modal');
+      modal.style.display = 'flex';
+      setTimeout(() => modal.style.opacity = '1', 50);
+    }
+    function closeLetterModal() {
+      const modal = document.getElementById('letter-modal');
+      modal.style.opacity = '0';
+      setTimeout(() => modal.style.display = 'none', 300);
+    }
+
     // 音樂與音效控制
-    function switchBgm(type) { // 'main' 或 'butcher'
+    function switchBgm(type) {
       const bgmMain = document.getElementById('bgm');
       const bgmButcher = document.getElementById('bgm-butcher');
       if (type === 'butcher') {
-        bgmMain.pause();
-        bgmButcher.play().catch(e => {});
+        bgmMain.pause(); bgmButcher.play().catch(e => {});
       } else {
-        bgmButcher.pause();
-        bgmMain.play().catch(e => {});
+        bgmButcher.pause(); bgmMain.play().catch(e => {});
       }
     }
 
@@ -276,7 +345,7 @@
         modal.style.opacity = '0';
         setTimeout(() => {
           modal.style.display = 'none';
-          phone.classList.remove('heavy-shake');
+          if (!currentQTEActive) phone.classList.remove('heavy-shake');
         }, 300);
       }, durationMs);
     }
@@ -296,6 +365,44 @@
       const el = document.getElementById('elevator-status');
       el.style.display = 'inline';
       el.innerText = `🛗 B${floor}層 (${statusText})`;
+    }
+
+    // 1秒 QTE 限時機制
+    let qteTimer = null;
+    let currentQTEActive = false;
+
+    function startQTETimer() {
+      clearTimeout(qteTimer);
+      currentQTEActive = true;
+      const phone = document.getElementById('phone');
+      const timerBar = document.getElementById('qte-timer-bar');
+      
+      phone.classList.add('heavy-shake'); // 全程震動
+      timerBar.style.display = 'block';
+      timerBar.style.width = '100%';
+      timerBar.style.transition = 'none';
+      void timerBar.offsetWidth; // 強制重繪
+      timerBar.style.transition = 'width 1s linear';
+      timerBar.style.width = '0%';
+
+      qteTimer = setTimeout(() => {
+        handleQTETimeout();
+      }, 1000); // 1秒超時慘死
+    }
+
+    function stopQTETimer() {
+      clearTimeout(qteTimer);
+      currentQTEActive = false;
+      const timerBar = document.getElementById('qte-timer-bar');
+      timerBar.style.display = 'none';
+    }
+
+    function handleQTETimeout() {
+      stopQTETimer();
+      document.getElementById('phone').classList.remove('heavy-shake');
+      playChainsaw();
+      popupImage('image01.jpg', 2500, true);
+      playNode('chap3_qte_timeout_death');
     }
 
     let activeChat = 'unknown'; 
@@ -416,7 +523,7 @@
       footsteps_approach: {
         chat: 'unknown',
         system: "【系統】：木箱頂部傳來沉悶重壓感。上方傳來了極其沉重的腳步聲...",
-        action: () => { playFootsteps(); switchBgm('butcher'); }, // 明確提及腳步聲 -> 播放腳步聲 + 屠夫BGM
+        action: () => { playFootsteps(); switchBgm('butcher'); },
         messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
         choices: [
           { text: "（死命憋氣）", nextNode: "breath_1" },
@@ -443,13 +550,13 @@
       },
       breath_death: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); playChainsaw(); popupImage('image01.jpg', 2500, true); }, // 停腳步聲，放電鋸
+        action: () => { stopFootsteps(); playChainsaw(); popupImage('image01.jpg', 2500, true); },
         system: "【結局：無處可逃】\n咳嗽聲曝露了位置。一陣刺眼的強光照入，伴隨著電鋸震耳欲聾的轟鳴聲...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       breath_success: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); switchBgm('main'); }, // 腳步聲遠去 -> 停止腳步聲，切回主BGM
+        action: () => { stopFootsteps(); switchBgm('main'); },
         system: "【系統】：腳步聲遠去。{name}終於可以貪婪地吸入空氣。",
         messages: ["他走了。{name}還有最後三十秒。", "用那根鐵釘，拼死撬開正上方那塊木板！"],
         choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
@@ -492,10 +599,17 @@
       },
       chap1_mud: {
         chat: 'unknown',
-        system: "【系統】：在爛泥中摸到一張照片，背面寫著數字：『04』。",
+        system: "【系統】：在爛泥中，你摸到了一個防水袋！裡面封存著一封用血寫成的信件...",
         action: () => { gameState.exploredMud = true; gameState.knownClue1 = true; },
-        messages: ["找到什麼了嗎？"],
-        choices: [{ text: "一張寫著『04』的照片。", nextNode: "chap1_hub" }]
+        isLetterMsg: true, // 觸發 WhatsApp 圖片訊息氣泡
+        messages: ["找到了信件？點擊圖片放大閱讀信件內容！"],
+        choices: [{ text: "（放大細讀04留下的信件）", nextNode: "read_letter_done" }]
+      },
+      read_letter_done: {
+        chat: 'unknown',
+        action: () => { openLetterModal(); }, // 自動開啟放大信件 Modal
+        messages: ["看完信了嗎？這封信裡藏著開啟鐵櫃的密碼邏輯。"],
+        choices: [{ text: "我明白了，回去檢查鐵櫃。", nextNode: "chap1_hub" }]
       },
       chap1_door_locked: {
         chat: 'unknown',
@@ -523,7 +637,7 @@
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
         action: () => { popupImage('image02.jpg', 3000); },
-        messages: ["想想泥坑留下的數字(04)，加上派對號碼(27)。"],
+        messages: ["想想 04 在信中留下的算式：（04 + [27-3]）。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
       },
@@ -541,7 +655,7 @@
       },
       chap1_door_final: {
         chat: 'unknown',
-        action: () => { playFootsteps(); switchBgm('butcher'); }, // 明確提及腳步聲 -> 播放腳步聲 + 屠夫BGM
+        action: () => { playFootsteps(); switchBgm('butcher'); },
         system: "【系統】：正當舉起手準備刷卡時，手機突然狂震！",
         messages: ["等等！！！", "別刷卡！！！", "馬上找地方躲起來！！！"],
         systemDanger: "【系統】：門外傳來金屬拖行聲與腳步聲，停在鐵門外。",
@@ -558,13 +672,13 @@
       },
       hide_cabinet: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); }, // 腳步聲停，但屠夫在房間裡，維持屠夫BGM
+        action: () => { stopFootsteps(); },
         system: "【系統】：{name}鑽進鐵櫃。屠夫扔下一個滴血的黑色塑膠袋後離開。",
         choices: [{ text: "（死死捂住自己的嘴巴）", nextNode: "chap1_end" }]
       },
       chap1_end: {
         chat: 'unknown',
-        action: () => { switchBgm('main'); }, // 屠夫離開 -> 切回主BGM
+        action: () => { switchBgm('main'); },
         system: "【系統】：鐵門再次鎖上。\nWhatsApp 傳來訊息：『出來吧。現在，準備進入走廊...』",
         choices: [{ text: "推開櫃門，進入走廊", nextNode: "chap2_start" }]
       },
@@ -603,7 +717,7 @@
       chap2_04_explain: {
         chat: '04',
         messages: [
-          "我是『04號』。那張照片上的就是我。", 
+          "我是『04號』。那封信就是我留下的。", 
           "一直跟你對話的那個『未知號碼』，就是把你關進來的變態！",
           "右邊的標本室裡佈滿了毒氣陷阱！"
         ],
@@ -639,7 +753,6 @@
         ]
       },
 
-      // 分歧 A：標本室
       chap2_go_specimen: {
         chat: 'unknown',
         system: "【系統】：你進入『標本室』。",
@@ -655,7 +768,7 @@
       },
       chap2_specimen_panic: {
         chat: 'unknown',
-        action: () => { playChainsaw(); switchBgm('butcher'); }, // 明確提及電鋸轟鳴 -> 播電鋸聲 + 屠夫BGM (沒提及腳步聲)
+        action: () => { playChainsaw(); switchBgm('butcher'); },
         systemDanger: "【系統】：門外傳來電鋸轟鳴聲！屠夫正在切割木門！",
         messages: ["屠夫發現你了！密碼是『1031』！快輸入密碼開門！"],
         choices: [{ text: "（手機震動！04 傳來訊息！）", nextNode: "chap2_04_final_warning", isHack: true }]
@@ -671,7 +784,7 @@
       },
       chap2_red_door_open: {
         chat: 'unknown',
-        action: () => { stopChainsaw(); switchBgm('main'); }, // 逃脫 -> 關閉電鋸，切回主BGM
+        action: () => { stopChainsaw(); switchBgm('main'); },
         system: "【系統】：輸入 1031，鐵閘門彈開！你衝進去反鎖了門。",
         messages: ["你活下來了。"],
         messagesAfter: ["門後面確實是貨運電梯。衝進電梯，準備下降！"],
@@ -684,7 +797,6 @@
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
-      // 分歧 B：鍋爐房
       chap2_go_boiler: {
         chat: '04',
         system: "【系統】：你走進『廢棄鍋爐房』。",
@@ -712,7 +824,7 @@
       },
       chap2_boiler_panic: {
         chat: 'unknown',
-        action: () => { playFootsteps(); switchBgm('butcher'); }, // 明確提及腳步聲 -> 播腳步聲 + 屠夫BGM
+        action: () => { playFootsteps(); switchBgm('butcher'); },
         systemHack: "【系統】：04 斷開連線，視窗切換回『未知號碼』。",
         messages: ["我警告過你的，屠夫已經進入鍋爐房了。"],
         systemDanger: "【系統】：管道外傳來沉重的腳步聲。屠夫拿著手電筒照向通風口，正伸手抓你的腳踝！",
@@ -735,10 +847,10 @@
         choices: [{ text: "衝進維修電梯！", nextNode: "chap3_start" }]
       },
 
-      // ==================== 【第三章：深淵升降機】 ====================
+      // ==================== 【第三章：深淵升降機 - 1秒 QTE 狂暴挑戰】 ====================
       chap3_start: {
         chat: 'unknown',
-        system: "【第三章：深淵升降機】\n『哐當！！！』重型鐵門在{name}背後合上。這是一個兩米見方的全金屬貨運電梯，天花板掛著一盞死寂的鎢絲燈。",
+        system: "【第三章：深淵升降機】\n『哐當！！！』重型鐵門合上。兩米見方的金屬電梯急速下墜。",
         action: () => { 
           updateElevatorUI(1, "下墜中");
           triggerGlitchAndVibrate();
@@ -746,96 +858,110 @@
         },
         messages: [
           "歡迎來到遊戲的『高速公路』。",
-          "這部電梯直通地下百米的『地下核心』。但屠夫絕對不會眼睜睜看著你離開。"
+          "這部電梯直通地下百米，但屠夫絕對不會眼睜睜看著你離開。"
         ],
         choices: [{ text: "這電梯搖晃得太厲害了！而且速度越來越快！", nextNode: "chap3_descent_panic" }]
       },
 
       chap3_descent_panic: {
         chat: 'unknown',
-        system: "【系統】：『咔嚓...咔嚓...』天花板上方傳來粗暴的金屬磨擦聲。電梯頂部的纜線正承受著不正常的巨響。",
+        system: "【系統】：『咔嚓...咔嚓...』天花板上方傳來粗暴的金屬磨擦聲。",
         action: () => { updateElevatorUI(2, "速度過快"); },
         messages: [
           "冷靜點。控制面板上有緊急煞車按鈕，但現在千萬別按。",
-          "如果在鋼纜還沒完全斷裂前手動煞車，反作用力會直接把電梯箱體撕碎。"
+          "如果在鋼纜還沒斷裂前煞車，反作用力會把箱體撕碎。"
         ],
-        choices: [{ text: "（突然！天花板傳來一陣劇烈的重壓衝擊！）", nextNode: "chap3_roof_impact" }]
+        choices: [{ text: "（突然！天花板傳來一陣劇烈的重壓衝擊！）", nextNode: "chap3_qte_1_intro" }]
       },
 
-      chap3_roof_impact: {
+      // QTE 1/4：頂部打擊
+      chap3_qte_1_intro: {
         chat: 'unknown',
+        isQTE: true,
         action: () => { 
           updateElevatorUI(3, "⚠️ 頂部遭襲");
-          switchBgm('butcher'); // 屠夫降臨電梯頂部 -> 切換屠夫BGM (沒提及腳步聲不播腳步聲)
+          switchBgm('butcher');
           popupImage('image01.jpg', 1500, true);
         },
-        systemDanger: "【警告】：『砰——！！！』天花板傳來沉重的撞擊聲！金屬頂板被整整砸下了一個凹坑！泥土與鮮血滴在{name}的臉頰上！",
-        messages: [
-          "該死！他追上來了！他跳上了電梯頂部！",
-          "他手裡有消防斧，他在砍斷主鋼纜！"
-        ],
+        systemDanger: "【QTE 1/4 - 限時 1 秒】：『砰——！！！』天花板被斧頭劈開！巨大的金屬頂板朝你面門砸落！",
         choices: [
-          { text: "拿生鏽長鐵勾往天花板縫隙猛刺！", nextNode: "chap3_fight_hook", isAction: true },
-          { text: "用打火機去燒頂部的電線短路！", nextNode: "chap3_fight_lighter", isAction: true },
-          { text: "蜷縮在角落，用雙手護住頭部！", nextNode: "chap3_fight_hide", isAction: true }
+          { text: "⚡ 【立刻向左翻滾閃避！】", nextNode: "chap3_qte_2_intro", isAction: true },
+          { text: "舉雙手死撐", nextNode: "chap3_qte_death_1", isAction: true },
+          { text: "向右站立不動", nextNode: "chap3_qte_death_1", isAction: true }
         ]
       },
 
-      chap3_fight_hook: {
-        chat: 'unknown',
-        system: "【系統】：{name}握緊生鏽長鐵勾順著縫隙狠狠向上刺去！『噗嗤！』鐵勾扎進肉體，上方傳來屠夫狂怒的咆哮聲！",
-        messages: ["幹得好！你刺中他的腳踝了！他暫時鬆手了！"],
-        choices: [{ text: "但電梯纜線『啪』的一聲斷了一根！", nextNode: "chap3_cable_snap_1" }]
-      },
-
-      chap3_fight_lighter: {
+      chap3_qte_death_1: {
         chat: 'unknown',
         action: () => { playChainsaw(); },
-        system: "【結局：電梯爆炸】\n火花瞬間引爆了電梯箱體內的油脂蒸汽！衝天烈焰吞噬了一切...",
+        system: "【結局：腦漿塗地】\n你反應不及！數百斤重的金屬頂板砸中你的頭部，你當場倒在血泊中...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
-      chap3_fight_hide: {
+      // QTE 2/4：大手掐脖
+      chap3_qte_2_intro: {
         chat: 'unknown',
-        action: () => { popupImage('image01.jpg', 2500, true); },
-        system: "【結局：天降橫禍】\n天花板被斧頭劈開一個大洞，屠夫從天而降把{name}壓倒在地。斧光一閃...",
-        choices: [{ text: "重新開始", nextNode: "restart" }]
-      },
-
-      chap3_cable_snap_1: {
-        chat: 'unknown',
-        action: () => { 
-          updateElevatorUI(5, "⚡ 失控自由落體");
-          triggerGlitchAndVibrate(); 
-        },
-        systemDanger: "【極度危險】：『崩！！！』主鋼纜崩斷的巨響在井道內迴盪！電梯瞬間進入自由落體狀態！失重感讓{name}整個人浮空撞在天花板上！",
-        messages: [
-          "{name}！聽著！電梯還有最後一道磁力安全煞車機關！",
-          "看到控制面板底部的黃色手動開關了嗎？看準電梯降到 B8 層的瞬間拉下它！提前或太晚拉你都會粉身碎骨！"
-        ],
-        choices: [{ text: "【準備 QTE 操作】盯緊控制面板的顯示屏！", nextNode: "chap3_qte_panel" }]
-      },
-
-      chap3_qte_panel: {
-        chat: 'unknown',
-        action: () => { updateElevatorUI(7, "極速下降中..."); },
-        system: "【系統 QTE】：屏幕上的數字瘋狂狂飆！\n『B6層...』\n『B7層...』\n耳邊全是風聲與金屬摩擦刺耳聲！就是現在！",
+        isQTE: true,
+        systemDanger: "【QTE 2/4 - 限時 1 秒】：頂部破洞伸出一隻沾滿鮮血的大手，死死卡住了你的喉嚨！",
         choices: [
-          { text: "【立刻拉下黃色煞車手把！】", nextNode: "chap3_brake_success", isAction: true },
-          { text: "（猶豫了半秒）再等一下...", nextNode: "chap3_brake_late", isAction: true },
-          { text: "【不管了！瘋狂連續敲打面板！】", nextNode: "chap3_brake_early", isAction: true }
+          { text: "⚡ 【拿生鏽長鐵勾猛刺大手！】", nextNode: "chap3_qte_3_intro", isAction: true },
+          { text: "用雙手拉開他", nextNode: "chap3_qte_death_2", isAction: true },
+          { text: "大聲慘叫求饒", nextNode: "chap3_qte_death_2", isAction: true }
+        ]
+      },
+
+      chap3_qte_death_2: {
+        chat: 'unknown',
+        system: "【結局：窒息斷頸】\n屠夫巨大的力量直接捏碎了你的氣管，將你整個人向上拖起折斷了頸椎...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      // QTE 3/4：滑輪砸落
+      chap3_qte_3_intro: {
+        chat: 'unknown',
+        isQTE: true,
+        systemDanger: "【QTE 3/4 - 限時 1 秒】：『崩！！！』主鋼纜斷裂！巨大的金屬滑輪從天花板高速砸下！",
+        choices: [
+          { text: "⚡ 【立刻蹲下貼緊左側壁角！】", nextNode: "chap3_qte_4_intro", isAction: true },
+          { text: "往中間跳躍", nextNode: "chap3_qte_death_3", isAction: true },
+          { text: "站立舉手護頭", nextNode: "chap3_qte_death_3", isAction: true }
+        ]
+      },
+
+      chap3_qte_death_3: {
+        chat: 'unknown',
+        system: "【結局：壓成肉餅】\n半噸重的金屬滑輪砸中你的胸膛，肋骨全碎扎入心臟...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      // QTE 4/4：極速煞車
+      chap3_qte_4_intro: {
+        chat: 'unknown',
+        isQTE: true,
+        action: () => { updateElevatorUI(7, "⚡ 失控極速自由落體"); },
+        systemDanger: "【QTE 4/4 - 限時 1 秒】：樓層計數狂飆！『B8層』紅燈亮起的瞬間！",
+        choices: [
+          { text: "⚡ 【立刻拉下黃色煞車手把！】", nextNode: "chap3_brake_success", isAction: true },
+          { text: "按下所有樓層按鈕", nextNode: "chap3_brake_early", isAction: true },
+          { text: "拉動紅色備用纜繩", nextNode: "chap3_brake_late", isAction: true }
         ]
       },
 
       chap3_brake_early: {
         chat: 'unknown',
-        system: "【結局：高空毀滅】\n你在 B7 層之前過早拉下了煞車！巨大的磁力阻尼撕裂了電梯底盤...",
+        system: "【結局：高空毀滅】\n巨大的磁力阻尼瞬間撕裂了電梯底盤，整個箱體在半空中解體崩塌...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
       chap3_brake_late: {
         chat: 'unknown',
-        system: "【結局：墜毀身亡】\n你猶豫了！電梯以極速重重砸向 B10 層底座...",
+        system: "【結局：墜毀身亡】\n電梯以極速重重砸向 B10 層底座，箱體完全扁平化...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+
+      chap3_qte_timeout_death: {
+        chat: 'unknown',
+        system: "【結局：反應遲鈍】\n你在極度恐懼中遲疑了！1 秒的猶豫讓你失去了最後生存的希望，屠夫的電鋸貫穿了你的胸膛...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
@@ -845,7 +971,7 @@
           stopAllSfx();
           updateElevatorUI(9, "緊急煞車成功");
           triggerGlitchAndVibrate();
-          switchBgm('main'); // 屠夫摔落，危機解除 -> 切回主BGM
+          switchBgm('main');
         },
         system: "【系統】：『吱——！！！！』刺耳的金屬摩擦聲爆開！火花傾瀉！離心力將{name}重重壓在地板上！\n\n『咚！！！』\n電梯箱體懸停住了！四周陷入漆黑。",
         messages: [
@@ -860,7 +986,7 @@
         chat: 'unknown',
         system: "【系統】：天花板上方傳來慘叫。在剛剛劇烈的煞車中，位於頂部的屠夫被巨大的慣性甩飛，跌落進了無底的電梯井深處。",
         messages: [
-          "他摔下下去。從那個高度摔下去絕不可能活命。",
+          "他摔下去了。從那個高度摔下去絕不可能活命。",
           "現在，用你身上的磁卡撬開變形的電梯門。",
           "歡迎來到『地下百米實驗室』。這裡才是所有秘密的源頭..."
         ],
@@ -918,7 +1044,7 @@
         sysDiv.innerText = t(sysText);
         activeBg.appendChild(sysDiv);
         scrollToBottom();
-        await sleep(1500);
+        await sleep(1200);
       }
       
       if (node.systemDanger) {
@@ -927,7 +1053,7 @@
         dangerDiv.innerText = t(node.systemDanger);
         activeBg.appendChild(dangerDiv);
         scrollToBottom();
-        await sleep(1500);
+        await sleep(1200);
       }
 
       if (node.systemHack) {
@@ -936,7 +1062,18 @@
         hackDiv.innerText = t(node.systemHack);
         activeBg.appendChild(hackDiv);
         scrollToBottom();
-        await sleep(1500);
+        await sleep(1200);
+      }
+
+      // 渲染 WhatsApp 圖片訊息氣泡 (04信件)
+      if (node.isLetterMsg) {
+        const imgBubble = document.createElement('div');
+        imgBubble.className = 'msg-image-bubble';
+        imgBubble.onclick = openLetterModal;
+        imgBubble.innerHTML = `<div class="msg-image-thumb">【04的血書信件】<br>致後來的犧牲者...<br>我是第4個被抓來的人...</div>`;
+        activeBg.appendChild(imgBubble);
+        scrollToBottom();
+        await sleep(800);
       }
 
       if (node.messages) {
@@ -945,7 +1082,7 @@
           typingIndicator.style.display = 'block';
           document.getElementById('online-status').innerText = '正在輸入...';
           scrollToBottom();
-          await sleep(1200 + Math.random() * 800); 
+          await sleep(1000 + Math.random() * 600); 
           typingIndicator.style.display = 'none';
           document.getElementById('online-status').innerText = '在線上';
 
@@ -954,22 +1091,16 @@
           div.innerText = t(msg);
           activeBg.appendChild(div);
           scrollToBottom();
-          await sleep(600);
+          await sleep(500);
         }
       }
-      
-      if (node.messagesAfter) {
-        for (let msg of node.messagesAfter) {
-          typingIndicator.style.display = 'block';
-          await sleep(1500);
-          typingIndicator.style.display = 'none';
-          const div = document.createElement('div');
-          div.className = 'msg received';
-          div.innerText = t(msg);
-          activeBg.appendChild(div);
-          scrollToBottom();
-          await sleep(600);
-        }
+
+      // 判斷是否啟動 1 秒 QTE 計時器
+      if (node.isQTE) {
+        startQTETimer();
+      } else {
+        stopQTETimer();
+        if (!currentQTEActive) document.getElementById('phone').classList.remove('heavy-shake');
       }
 
       if (node.inputNode) {
@@ -983,7 +1114,7 @@
           playSentSfx();
           const val = inputField.value;
           await handleSentText("輸入了: " + val);
-          if (val === '0427') playNode("chap1_cabinet_success");
+          if (val === '0424') playNode("chap1_cabinet_success"); // 正確密碼改為 0424
           else playNode("chap1_cabinet_fail");
         };
         inputGroup.appendChild(inputField); inputGroup.appendChild(sendBtn);
@@ -1016,7 +1147,8 @@
 
     async function handleChoice(choice) {
       playSentSfx();
-      stopAllSfx(); // 點擊選項時自動清除上一階段的臨時音效（如腳步聲、電鋸聲）
+      stopQTETimer(); // 按下按鈕立刻停止 QTE 1秒倒數
+      stopAllSfx();
 
       if (choice.nextNode === 'restart') { 
         sessionStorage.setItem('deathCount', deathCount + 1);
