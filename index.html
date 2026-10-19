@@ -3,40 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v0.4 (Full Demo)</title>
+  <title>WhatsApp Escape - v0.5</title>
   <style>
     body {
-      margin: 0;
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      margin: 0; background-color: #000; display: flex;
+      justify-content: center; align-items: center; height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
     }
     
     #start-screen {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      cursor: pointer;
-      flex-direction: column;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; color: #fff; display: flex; justify-content: center;
+      align-items: center; z-index: 100; flex-direction: column;
       transition: opacity 2s ease;
     }
-    #start-screen p { font-size: 18px; letter-spacing: 2px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+    #start-screen h1 { letter-spacing: 5px; color: #00A884; margin-bottom: 40px; font-weight: 300; }
+    #player-name {
+      background: #1F2C34; border: 1px solid #8696A0; color: #E9EDEF;
+      padding: 15px; border-radius: 10px; outline: none; font-size: 16px;
+      text-align: center; width: 250px; margin-bottom: 20px; transition: 0.3s;
+    }
+    #player-name:focus { border-color: #00A884; }
+    #start-btn {
+      background: #00A884; color: #0B141A; border: none; padding: 15px 40px;
+      border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px;
+      letter-spacing: 2px; transition: 0.3s; animation: pulse 2s infinite;
+    }
+    #start-btn:hover { background: #008f6f; animation: none; transform: scale(1.05); }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 168, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0); } }
 
     #phone {
       width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
       background: #0B141A; position: relative; display: flex; flex-direction: column;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1);
-      opacity: 0; transition: opacity 3s ease;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1); opacity: 0; transition: opacity 3s ease;
     }
     @media (min-width: 500px) {
       #phone { height: 850px; border-radius: 30px; overflow: hidden; border: 8px solid #222; }
@@ -46,74 +46,65 @@
       justify-content: space-between; padding: 5px 15px 0; align-items: center;
       font-size: 12px; font-weight: bold;
     }
+    #death-counter { color: #FF5252; }
     #wa-header {
       background: #1F2C34; color: #E9EDEF; padding: 10px 15px; display: flex;
       align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 10;
     }
     #wa-header .avatar {
       width: 40px; height: 40px; border-radius: 50%; background: #DFE5E7;
-      display: flex; justify-content: center; align-items: center;
-      color: #1F2C34; font-size: 20px; margin-right: 12px;
+      display: flex; justify-content: center; align-items: center; color: #1F2C34; font-size: 20px; margin-right: 12px;
     }
     #wa-header .info { display: flex; flex-direction: column; }
     #wa-header .name { font-weight: 600; font-size: 16px; }
     #wa-header .status { font-size: 13px; color: #8696A0; }
     #chat-bg {
-      flex: 1;
-      background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-      background-color: #0B141A; background-blend-mode: overlay;
-      padding: 15px; overflow-y: auto; display: flex; flex-direction: column;
+      flex: 1; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+      background-color: #0B141A; background-blend-mode: overlay; padding: 15px; overflow-y: auto; display: flex; flex-direction: column;
     }
     .msg {
       max-width: 75%; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
-      font-size: 15px; line-height: 1.4; position: relative; word-wrap: break-word;
-      animation: fadeIn 0.3s ease-in-out;
+      font-size: 15px; line-height: 1.4; position: relative; word-wrap: break-word; animation: fadeIn 0.3s ease-in-out;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg.received { background: #202C33; color: #E9EDEF; align-self: flex-start; border-top-left-radius: 0; }
     .msg.sent { background: #005C4B; color: #E9EDEF; align-self: flex-end; border-top-right-radius: 0; }
     .msg.system {
-      background: rgba(31, 44, 52, 0.9); color: #8696A0; align-self: center;
-      font-size: 13px; text-align: left; border-radius: 10px; max-width: 90%;
-      padding: 10px; margin-top: 10px; margin-bottom: 15px;
+      background: rgba(31, 44, 52, 0.9); color: #8696A0; align-self: center; font-size: 13px;
+      text-align: left; border-radius: 10px; max-width: 90%; padding: 10px; margin-top: 10px; margin-bottom: 15px;
     }
     .msg.system-danger { color: #FF5252; font-weight: bold; text-align: center; }
-    #typing-indicator {
-      color: #8696A0; font-size: 13px; padding-left: 20px; margin-bottom: 10px;
-      display: none; font-style: italic;
-    }
+    #typing-indicator { color: #8696A0; font-size: 13px; padding-left: 20px; margin-bottom: 10px; display: none; font-style: italic; }
     #choices-container { background: #1F2C34; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
     .choice-btn {
-      background: #2A3942; border: 1px solid #8696A0; color: #00A884;
-      padding: 12px; border-radius: 20px; text-align: center; font-size: 15px;
-      cursor: pointer; transition: background 0.2s; font-weight: bold;
+      background: #2A3942; border: 1px solid #8696A0; color: #00A884; padding: 12px;
+      border-radius: 20px; text-align: center; font-size: 15px; cursor: pointer; transition: background 0.2s; font-weight: bold;
     }
     .choice-btn:active { background: #384B57; }
-    
     .input-group { display: flex; gap: 10px; }
     .input-group input {
       flex: 1; background: #2A3942; border: 1px solid #8696A0; color: #E9EDEF;
       padding: 12px; border-radius: 20px; outline: none; font-size: 15px; text-align: center;
     }
-    .input-group button {
-      background: #00A884; color: #0B141A; border: none; padding: 12px 20px;
-      border-radius: 20px; font-weight: bold; cursor: pointer;
-    }
+    .input-group button { background: #00A884; color: #0B141A; border: none; padding: 12px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
 
-  <div id="start-screen" onclick="startGame()">
-    <p>點擊以睜開眼睛...</p>
+  <div id="start-screen">
+    <h1>窒息之匣</h1>
+    <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
+    <button id="start-btn" onclick="startGame()">睜開眼睛</button>
     <p style="font-size: 12px; color: #666; margin-top: 20px;">(建議佩戴耳機遊玩以獲得最佳體驗)</p>
   </div>
 
   <div id="phone">
     <div id="status-bar">
       <span id="clock">12:38</span>
-      <span>📵 無訊號 &nbsp;&nbsp; 📶 FREE_WIFI_09 &nbsp;&nbsp; 🔋 22%</span>
+      <span id="death-counter">💀 0</span>
+      <span>📵 無訊號 &nbsp; 🔋 22%</span>
     </div>
     <div id="wa-header">
       <div class="avatar">?</div>
@@ -128,6 +119,7 @@
   </div>
 
   <script>
+    // 時鐘更新
     function updateClock() {
       const now = new Date();
       document.getElementById('clock').innerText = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -135,102 +127,107 @@
     setInterval(updateClock, 60000);
     updateClock();
 
-    // 跨章節全局狀態管理
+    // 跨死亡狀態管理 (讀取 sessionStorage)
+    let playerName = sessionStorage.getItem('playerName') || '';
+    let deathCount = parseInt(sessionStorage.getItem('deathCount') || '0', 10);
+    
+    // 如果已有名字，自動填入輸入框
+    if(playerName) {
+      document.getElementById('player-name').value = playerName;
+    }
+    
+    // 更新死亡次數 UI
+    document.getElementById('death-counter').innerText = `💀 死亡次數: ${deathCount}`;
+
     let gameState = {
-      // 序章狀態
-      exploredLeft: false,
-      exploredRight: false,
-      foundLighter: false,
-      foundNail: false,
-      // 第一章狀態
-      exploredMud: false,
-      exploredDrain: false,
-      hasHook: false,
-      hasKeycard: false,
-      cabinetOpen: false,
-      knownClue1: false
+      exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
+      exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false, knownClue1: false
     };
 
+    // 文本解析器：將 {name} 替換為玩家名字（若無則預設為「你」）
+    function t(text) {
+      if(!text) return "";
+      const nameToUse = playerName.trim() !== '' ? playerName : '你';
+      return text.replace(/\{name\}/g, nameToUse);
+    }
+
     const storyData = {
-      // ==================== 【序幕：窒息之匣】 ====================
       start: {
-        system: "【序章：窒息之匣】\n一陣劇烈的暈眩後，你從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。你的胸腔感到沉重的壓迫，每一次呼吸都極度費力。",
-        messages: ["你醒了。", "你的心跳聲大到連我在上面都聽得見。"],
+        system: "【序章：窒息之匣】\n一陣劇烈的暈眩後，{name}從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。{name}的胸腔感到沉重的壓迫，每一次呼吸都極度費力。",
+        messages: ["{name}醒了。", "{name}的心跳聲大到連我在上面都聽得見。"],
         choices: [
-          { text: "你是誰？！救命啊！！！", nextNode: "panic_shout" },
+          { text: "我是誰？！救命啊！！！", nextNode: "panic_shout" },
           { text: "這是在哪裡？你想怎樣？", nextNode: "ask_calm" },
           { text: "（保持沉默，冷靜觀察）", nextNode: "stay_silent" }
         ]
       },
-            panic_shout: {
+      panic_shout: {
         action: () => {
-          // 因為 playNode 執行時會先顯示 1.5 秒的系統訊息，
-          // 我們設定大約 3.5 秒後（配合「正在輸入...」的時間）播放音效
           setTimeout(() => {
             const sfx = new Audio('soundeffect01.mp3');
-            sfx.play().catch(e => console.log("音效播放失敗，請確認檔案路徑或瀏覽器權限", e));
+            sfx.play().catch(e => console.log("音效未就緒", e));
           }, 3500); 
         },
         messages: ["🔊 [語音訊息 0:04]"],
-        system: "【系統】：語音訊息中傳來你剛剛聲嘶力竭的慘叫聲，但伴隨著從外部錄製的沉悶回音。厚重的泥土完全吞噬了你的聲音。",
-        messagesAfter: ["你每尖叫一次，就消耗了原本能讓你多活兩分鐘的氧氣。", "繼續叫，我喜歡聽。"],
+        system: "【系統】：語音訊息中傳來{name}剛剛聲嘶力竭的慘叫聲，但伴隨著從外部錄製的沉悶回音。厚重的泥土完全吞噬了聲音。",
+        messagesAfter: ["每尖叫一次，就消耗了原本能讓{name}多活兩分鐘的氧氣。", "繼續叫，我喜歡聽。"],
         choices: [{ text: "不...我不叫了。救我。", nextNode: "explore_hub" }]
       },
       ask_calm: {
-        messages: ["我是你現在唯一能抓住的繩子。", "別浪費力氣打字，聽我說。你現在被埋在地下，氧氣有限。"],
+        messages: ["我是{name}現在唯一能抓住的繩子。", "別浪費力氣打字，聽我說。{name}現在被埋在地下，氧氣有限。"],
         choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
       },
       stay_silent: {
-        messages: ["很好，你比上一件『垃圾』冷靜多了。", "你現在被埋在地下，氧氣有限。聽從我的指示，你才有機會活下來。"],
+        messages: ["很好，{name}比上一件『垃圾』冷靜多了。", "現在被埋在地下，氧氣有限。聽從我的指示，{name}才有機會活下來。"],
         choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
       },
       explore_hub: {
-        messages: ["用你的雙手，確認你周遭的環境。不要亂動，動作要小。"],
+        messages: ["用雙手確認周遭的環境。不要亂動，動作要小。"],
         getChoices: () => {
           let choices = [];
           if (!gameState.exploredLeft) choices.push({ text: "摸索左側的木板", nextNode: "explore_left" });
           if (!gameState.exploredRight) choices.push({ text: "摸索右側的角落", nextNode: "explore_right" });
-          if (!gameState.foundLighter) choices.push({ text: "摸索自己的西裝外套", nextNode: "explore_pocket" });
+          if (!gameState.foundLighter) choices.push({ text: "摸索自己的外套", nextNode: "explore_pocket" });
           if (gameState.foundLighter && !gameState.foundNail) choices.push({ text: "摸索木箱底部的夾縫", nextNode: "explore_bottom" });
           if (gameState.foundNail) choices.push({ text: "用生鏽鐵釘撬頭頂的木板！", nextNode: "footsteps_approach" });
           return choices;
         }
       },
       explore_left: {
-        system: "【系統】：你摸到粗糙的木頭紋理，接著是指甲刮過木板的深深凹槽。你的指腹沾上了某種黏稠、帶有鐵鏽味的半乾液體。順著凹槽，你發現那不是隨機的抓痕，而是有人用指甲刻出來的字...",
+        system: "【系統】：{name}摸到粗糙的木頭紋理，接著是指甲刮過木板的深深凹槽。指腹沾上了某種黏稠、帶有鐵鏽味的半乾液體。順著凹槽，{name}發現那不是隨機的抓痕，而是有人用指甲刻出來的字...",
         systemDanger: "「不要相信手機裡的人」",
         action: () => { gameState.exploredLeft = true; },
-        messages: ["你在發抖。摸到了什麼嗎？"],
+        messages: ["{name}在發抖。摸到了什麼嗎？"],
         choices: [{ text: "沒...沒有。", nextNode: "explore_hub" }]
       },
       explore_right: {
-        system: "【系統】：你摸到一塊柔軟的布料。拉扯時，發現那是一個破損的西裝口袋，裡面裝著一個冰冷的物體。手機微弱的光線照亮了它——那是一截已經發黑、戴著純金婚戒的斷指。",
+        system: "【系統】：{name}摸到一塊柔軟的布料。拉扯時，發現那是一個破損的西裝口袋，裡面裝著一個冰冷的物體。手機微弱的光線照亮了它——那是一截已經發黑、戴著純金婚戒的斷指。",
         action: () => { gameState.exploredRight = true; },
         messages: ["那個戒指原本挺值錢的，可惜被土弄髒了。繼續找。"],
         choices: [{ text: "（強忍嘔吐感繼續摸索）", nextNode: "explore_hub" }]
       },
       explore_pocket: {
-        system: "【系統】：你在自己的外套內袋裡，摸到了一個金屬質感的金屬打火機。",
+        system: "【系統】：{name}在自己的外套內袋裡，摸到了一個金屬質感的打火機。",
         action: () => { gameState.foundLighter = true; },
-        messages: ["你在猶豫什麼？"],
+        messages: ["{name}在猶豫什麼？"],
         choices: [
           { text: "點燃打火機，我想看清這裡！", nextNode: "lighter_death" },
           { text: "（把打火機收起來，繼續在黑暗中摸索）", nextNode: "explore_hub" }
         ]
       },
       lighter_death: {
-        messages: ["熄滅它！你這個蠢貨！！！"],
-        system: "【結局：作繭自縛】\n火光亮起的瞬間，狹小空間內僅存的氧氣被迅速抽乾。幽藍的火焰閃爍了兩下便熄滅，你的肺部如遭火燒，在劇烈的抽搐與窒息中，意識徹底陷入黑暗。",
+        messages: ["熄滅它！{name}這個蠢貨！！！"],
+        system: "【結局：作繭自縛】\n火光亮起的瞬間，狹小空間內僅存的氧氣被迅速抽乾。幽藍的火焰閃爍了兩下便熄滅，{name}的肺部如遭火燒，在劇烈的抽搐與窒息中，意識徹底陷入黑暗。",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       explore_bottom: {
-        system: "【系統】：你忍受著木刺扎入指甲縫的劇痛，硬生生地從木板接縫中拔出了一根又長又粗的「生鏽長鐵釘」。",
+        system: "【系統】：{name}忍受著木刺扎入指甲縫的劇痛，硬生生地從木板接縫中拔出了一根又長又粗的「生鏽長鐵釘」。",
         action: () => { gameState.foundNail = true; },
-        messages: ["好極了。現在，對準你正上方那塊有水漬的木板邊緣..."],
+        messages: ["好極了。現在，對準{name}正上方那塊有水漬的木板邊緣..."],
         choices: [{ text: "準備撬開木板", nextNode: "explore_hub" }]
       },
       footsteps_approach: {
-        system: "【系統】：木箱頂部突然傳來沉悶的重壓感，沙土從木板的縫隙中簌簌落下，掉進你的眼睛和嘴裡。上方傳來了極其沉重的腳步聲...",
+        system: "【系統】：木箱頂部突然傳來沉悶的重壓感，沙土從木板的縫隙中簌簌落下，掉進{name}的眼睛和嘴裡。上方傳來了極其沉重的腳步聲...",
         messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
         choices: [
           { text: "（死命憋氣）", nextNode: "breath_1" },
@@ -238,7 +235,7 @@
         ]
       },
       breath_1: {
-        system: "【系統】：沉重的腳步聲就在你鼻尖正上方停下。泥土壓得木板嘎吱作響。你的肺部開始發熱。",
+        system: "【系統】：沉重的腳步聲就在{name}鼻尖正上方停下。泥土壓得木板嘎吱作響。肺部開始發熱。",
         messages: ["（對方沒有傳送訊息，螢幕上的「正在輸入」閃爍不定）"],
         choices: [
           { text: "（繼續憋氣，咬緊牙關）", nextNode: "breath_2" },
@@ -246,7 +243,7 @@
         ]
       },
       breath_2: {
-        system: "【系統】：你感覺眼冒金星，胸腔彷彿要炸裂開來。上方傳來鐵鍬拍打泥土的聲音，一下、兩下...",
+        system: "【系統】：{name}感覺眼冒金星，胸腔彷彿要炸裂開來。上方傳來鐵鍬拍打泥土的聲音，一下、兩下...",
         messages: ["...撐住。"],
         choices: [
           { text: "（死不張口，眼前發黑）", nextNode: "breath_success" },
@@ -254,36 +251,35 @@
         ]
       },
       breath_death: {
-        system: "【結局：無處可逃】\n你猛地吸了一口氣，劇烈的咳嗽聲在木箱內迴盪。上方的腳步聲瞬間停止。接著是鐵鍬瘋狂挖開泥土的聲音，一陣刺眼的強光照入，伴隨著電鋸震耳欲聾的轟鳴聲...",
+        system: "【結局：無處可逃】\n{name}猛地吸了一口氣，劇烈的咳嗽聲在木箱內迴盪。上方的腳步聲瞬間停止。接著是鐵鍬瘋狂挖開泥土的聲音，一陣刺眼的強光照入，伴隨著電鋸震耳欲聾的轟鳴聲...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       breath_success: {
-        system: "【系統】：腳步聲慢慢走遠，直到完全消失。你終於可以貪婪地吸入帶著霉味的微薄空氣。",
-        messages: ["他走了。你還有最後三十秒。", "用那根鐵釘，撬開你鼻子正上方那塊木板！拼死撬！"],
+        system: "【系統】：腳步聲慢慢走遠，直到完全消失。{name}終於可以貪婪地吸入帶著霉味的微薄空氣。",
+        messages: ["他走了。{name}還有最後三十秒。", "用那根鐵釘，撬開正上方那塊木板！拼死撬！"],
         choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
       },
       pry_board: {
-        system: "【系統】：鐵釘逐漸彎曲，你的虎口被磨得血肉模糊。在最後一次用力時，「啪」的一聲，鐵釘斷成了兩截。就在這最絕望的瞬間，木板也發出令人牙酸的斷裂聲。冰冷的爛泥如同瀑布般傾瀉而下，瞬間掩埋了你的口鼻！",
+        system: "【系統】：鐵釘逐漸彎曲，虎口被磨得血肉模糊。在最後一次用力時，「啪」的一聲，鐵釘斷成了兩截。就在這最絕望的瞬間，木板也發出令人牙酸的斷裂聲。冰冷的爛泥如同瀑布般傾瀉而下，瞬間掩埋了{name}的口鼻！",
         choices: [{ text: "不顧一切往上扒土！！！", nextNode: "chap1_start" }]
       },
 
-      // ==================== 【第一章：鐵鏽與血】 ====================
       chap1_start: {
-        system: "【第一章：鐵鏽與血】\n你拼命扒開泥土，掙扎著爬出淺坑。泥水混合著血水順著你的臉頰滴落。你身處一個陰冷的廢棄地下室，天花板的鎢絲燈閃爍不定，發出滋滋的電流聲。這裡充滿了令人作嘔的腐臭味。",
-        messages: ["看來你命挺大的。", "但這只是他為你準備的『遊樂場』。他出去處理『上一件垃圾』了，你大概有 15 分鐘的時間逃出這個房間。"],
+        system: "【第一章：鐵鏽與血】\n{name}拼命扒開泥土，掙扎著爬出淺坑。泥水混合著血水順著臉頰滴落。{name}身處一個陰冷的廢棄地下室，天花板的鎢絲燈閃爍不定，發出滋滋的電流聲。這裡充滿了令人作嘔的腐臭味。",
+        messages: ["看來{name}命挺大的。", "但這只是他為你準備的『遊樂場』。他出去處理『上一件垃圾』了，{name}大概有 15 分鐘的時間逃出這個房間。"],
         choices: [
           { text: "這到底是哪裡？他到底是誰？", nextNode: "ask_who_chap1" },
           { text: "我該怎麼做？", nextNode: "chap1_hub" }
         ]
       },
       ask_who_chap1: {
-        messages: ["一個喜歡在 Speed Dating 派對上尋找完美獵物的人。", "還記得你在派對上的『配對號碼』嗎？你喝下那杯酒的時候，胸前貼著幾號？"],
-        system: "【系統】：你的大腦一陣劇痛。你隱約想起在那個燈光昏暗的酒吧裡，你胸前貼著一張白色的圓形貼紙，上面寫著數字『27』。",
-        messagesAfter: ["想起來了嗎？這很重要。現在，仔細搜查你周圍的環境。"],
+        messages: ["一個喜歡在 Speed Dating 派對上尋找完美獵物的人。", "還記得{name}在派對上的『配對號碼』嗎？喝下那杯酒的時候，胸前貼著幾號？"],
+        system: "【系統】：大腦一陣劇痛。{name}隱約想起在那個燈光昏暗的酒吧裡，胸前貼著一張白色的圓形貼紙，上面寫著數字『27』。",
+        messagesAfter: ["想起來了嗎？這很重要。現在，仔細搜查周圍的環境。"],
         choices: [{ text: "好，我看看四周。", nextNode: "chap1_hub" }]
       },
       chap1_hub: {
-        system: "【系統】：地下室空間不大。左邊角落有一個生鏽的鐵櫃；正前方是一扇厚重的鐵門；右邊地上有一個散發著惡臭的排水口；而你身後，則是剛剛爬出來的那個泥坑。",
+        system: "【系統】：地下室空間不大。左邊角落有一個生鏽的鐵櫃；正前方是一扇厚重的鐵門；右邊地上有一個散發著惡臭的排水口；而身後，則是剛剛爬出來的那個泥坑。",
         getChoices: () => {
           let choices = [];
           if (!gameState.exploredMud) choices.push({ text: "檢查剛剛爬出來的泥坑", nextNode: "chap1_mud" });
@@ -295,7 +291,7 @@
         }
       },
       chap1_mud: {
-        system: "【系統】：你強忍著恐懼，回到那個差點成為你墳墓的泥坑。在邊緣的爛泥中，你摸到了一張半埋著的拍立得照片。照片上滿是刮痕，隱約能看出是 Speed Dating 派對的場景。照片背面用紅色的筆寫著兩個數字：『04』。",
+        system: "【系統】：{name}強忍著恐懼，回到那個差點成為墳墓的泥坑。在邊緣的爛泥中，摸到了一張半埋著的拍立得照片。照片上滿是刮痕，隱約能看出是派對的場景。照片背面用紅色的筆寫著兩個數字：『04』。",
         action: () => { gameState.exploredMud = true; gameState.knownClue1 = true; },
         messages: ["找到什麼了嗎？不要錯過任何數字或文字。"],
         choices: [{ text: "一張寫著『04』的照片。", nextNode: "chap1_hub" }]
@@ -307,8 +303,8 @@
       },
       chap1_drain: {
         system: () => {
-          if (gameState.hasHook) return "【系統】：你拿出鐵櫃裡找到的生鏽鐵勾，慢慢伸進惡臭的排水口深處。勾住了一個硬物！你小心翼翼地把它拉上來...是一張沾滿毛髮與污垢的【電子房卡】！";
-          return "【系統】：排水口散發著濃烈的腐敗氣味。你瞇起眼睛，看到排水口深處有什麼東西在反光。你試著伸手進去抓，但裡面佈滿了生鏽的鋒利鐵絲！『嘶——』你的手背被狠狠劃開一道口子，鮮血直流。你需要某種工具才能把它弄出來。";
+          if (gameState.hasHook) return "【系統】：{name}拿出鐵櫃裡找到的生鏽鐵勾，慢慢伸進惡臭的排水口深處。勾住了一個硬物！小心翼翼地把它拉上來...是一張沾滿污垢的【電子房卡】！";
+          return "【系統】：排水口散發著濃烈的腐敗氣味。{name}瞇起眼睛，看到深處有什麼東西在反光。試著伸手進去抓，但裡面佈滿了鋒利鐵絲！『嘶——』手背被狠狠劃開一道口子，鮮血直流。需要某種工具。";
         },
         action: () => {
           if (gameState.hasHook) gameState.hasKeycard = true;
@@ -316,13 +312,13 @@
         },
         messages: () => {
           if (gameState.hasHook) return ["拿到房卡了？幹得好！快去開門！"];
-          return ["別用手去抓，你會死於破傷風的。找個能勾東西的工具。"];
+          return ["別用手去抓，{name}會死於破傷風的。找個能勾東西的工具。"];
         },
         choices: [{ text: "返回尋找工具", nextNode: "chap1_hub" }]
       },
       chap1_cabinet: {
         system: "【系統】：這是一個老舊的員工鐵櫃。門把上掛著一個四位數的密碼鎖。",
-        messages: ["密碼通常是他最得意的戰利品編號。想想他在泥坑留下的數字，再加上你派對上的『配對號碼』(27)。"],
+        messages: ["密碼通常是他最得意的戰利品編號。想想他在泥坑留下的數字，再加上{name}派對上的『配對號碼』(27)。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
       },
@@ -331,13 +327,13 @@
         choices: [{ text: "再試一次", nextNode: "chap1_cabinet" }, { text: "去檢查別的地方", nextNode: "chap1_hub" }]
       },
       chap1_cabinet_success: {
-        system: "【系統】：『喀啦』一聲，密碼鎖開了。你拉開鐵櫃，裡面有一股濃烈的防腐劑味道。櫃子裡放著一把【生鏽的長鐵勾】、一個摔碎的粉紅色手機，以及一瓶止痛藥。",
+        system: "【系統】：『喀啦』一聲，密碼鎖開了。{name}拉開鐵櫃，裡面有一股濃烈的防腐劑味道。櫃子裡放著一把【生鏽的長鐵勾】、一個摔碎的手機，以及一瓶止痛藥。",
         action: () => { gameState.cabinetOpen = true; gameState.hasHook = true; },
-        messages: ["那部粉紅色手機是上一位受害者的。別看了，拿上能用的東西，去把排水口裡的東西弄出來。"],
+        messages: ["拿上能用的東西，去把排水口裡的東西弄出來。"],
         choices: [{ text: "拿走鐵勾，離開鐵櫃", nextNode: "chap1_hub" }]
       },
       chap1_door_final: {
-        system: "【系統】：你拿著那張沾滿污垢的房卡，走向鐵門。刷卡機的紅燈閃爍著。正當你舉起手準備刷卡時，手機突然狂震！",
+        system: "【系統】：{name}拿著房卡，走向鐵門。正當舉起手準備刷卡時，手機突然狂震！",
         messages: ["等等！！！", "別刷卡！！！", "馬上找地方躲起來！！！"],
         systemDanger: "【系統】：門外突然傳來沉重拖拽的腳步聲，伴隨著金屬拖行在地上的刺耳聲響。腳步聲停在了鐵門外。門把手開始轉動...",
         choices: [
@@ -346,17 +342,17 @@
         ]
       },
       death_door_rush: {
-        system: "【結局：羊入虎口】\n『嗶——』綠燈亮起的瞬間，門被從外面猛然拉開。一個戴著豬頭面具、身高接近兩米的壯漢站在門外，手裡拖著一把沾滿鮮血的消防斧。他看著你，發出沉悶的笑聲。斧頭劈下...",
+        system: "【結局：羊入虎口】\n『嗶——』綠燈亮起的瞬間，門被從外面猛然拉開。一個戴著豬頭面具的壯漢站在門外，手裡拖著一把沾滿鮮血的消防斧。斧頭朝{name}劈下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       hide_cabinet: {
-        system: "【系統】：你連滾帶爬地鑽進充滿防腐劑味道的鐵櫃，輕輕拉上櫃門。透過百葉窗的縫隙，你看到鐵門被推開了。",
+        system: "【系統】：{name}連滾帶爬地鑽進充滿防腐劑味道的鐵櫃。透過縫隙，看到鐵門被推開了。",
         messages: ["（未知號碼沒有傳送任何訊息，對話框一片死寂）"],
-        systemDanger: "【系統】：那個戴著豬頭面具的男人走了進來。他走到你剛剛爬出來的泥坑前，扔下一個滴著血的黑色塑膠袋。接著，他慢慢轉過頭，看向了你藏身的鐵櫃...",
+        systemDanger: "【系統】：戴著豬頭面具的男人走了進來。他慢慢轉過頭，看向了{name}藏身的鐵櫃...",
         choices: [{ text: "（死死捂住自己的嘴巴）", nextNode: "chap1_end" }]
       },
       chap1_end: {
-        system: "【第一章完結：未完待續】\n男人盯著鐵櫃看了幾秒鐘，似乎沒有察覺異樣。他轉身離開地下室，厚重的鐵門再次鎖上。\n這時，WhatsApp 傳來訊息：『出來吧。現在，準備進入走廊...』",
+        system: "【第一章完結：未完待續】\n男人盯著鐵櫃看了幾秒鐘，似乎沒有察覺異樣。他轉身離開地下室。\n這時，WhatsApp 傳來訊息：『出來吧。現在，準備進入走廊...』",
         choices: []
       }
     };
@@ -367,9 +363,14 @@
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     
     function startGame() {
+      const nameInput = document.getElementById('player-name').value;
+      playerName = nameInput.trim();
+      sessionStorage.setItem('playerName', playerName); // 儲存名字
+
       document.getElementById('start-screen').style.opacity = '0';
       document.getElementById('phone').style.opacity = '1';
-      document.getElementById('bgm').play().catch(() => console.log("音樂播放未就緒"));
+      document.getElementById('bgm').play().catch(() => console.log("音樂未就緒"));
+      
       setTimeout(() => {
         document.getElementById('start-screen').style.display = 'none';
         playNode('start');
@@ -384,28 +385,25 @@
 
       if (node.action) node.action();
 
-      // 播放一般系統提示
       if (node.system) {
         const sysText = typeof node.system === 'function' ? node.system() : node.system;
         const sysDiv = document.createElement('div');
         sysDiv.className = 'msg system';
-        sysDiv.innerText = sysText;
+        sysDiv.innerText = t(sysText); // 應用名字替換
         chatBg.appendChild(sysDiv);
         scrollToBottom();
         await sleep(1500);
       }
       
-      // 播放紅色危險提示
       if (node.systemDanger) {
         const dangerDiv = document.createElement('div');
         dangerDiv.className = 'msg system system-danger';
-        dangerDiv.innerText = node.systemDanger;
+        dangerDiv.innerText = t(node.systemDanger);
         chatBg.appendChild(dangerDiv);
         scrollToBottom();
         await sleep(1500);
       }
 
-      // 播放對話
       if (node.messages) {
         const msgs = typeof node.messages === 'function' ? node.messages() : node.messages;
         for (let msg of msgs) {
@@ -418,14 +416,13 @@
 
           const div = document.createElement('div');
           div.className = 'msg received';
-          div.innerText = msg;
+          div.innerText = t(msg);
           chatBg.appendChild(div);
           scrollToBottom();
           await sleep(600);
         }
       }
       
-      // 播放特殊插話
       if (node.messagesAfter) {
         for (let msg of node.messagesAfter) {
           typingIndicator.style.display = 'block';
@@ -433,22 +430,18 @@
           typingIndicator.style.display = 'none';
           const div = document.createElement('div');
           div.className = 'msg received';
-          div.innerText = msg;
+          div.innerText = t(msg);
           chatBg.appendChild(div);
           scrollToBottom();
           await sleep(600);
         }
       }
 
-      // 密碼輸入框
       if (node.inputNode) {
         const inputGroup = document.createElement('div');
         inputGroup.className = 'input-group';
         const inputField = document.createElement('input');
-        inputField.type = 'text';
-        inputField.placeholder = '輸入四位數字...';
-        inputField.maxLength = 4;
-        
+        inputField.type = 'text'; inputField.placeholder = '輸入四位數字...'; inputField.maxLength = 4;
         const sendBtn = document.createElement('button');
         sendBtn.innerText = '嘗試開鎖';
         sendBtn.onclick = async () => {
@@ -457,18 +450,16 @@
           if (val === '0427') playNode("chap1_cabinet_success");
           else playNode("chap1_cabinet_fail");
         };
-        inputGroup.appendChild(inputField);
-        inputGroup.appendChild(sendBtn);
+        inputGroup.appendChild(inputField); inputGroup.appendChild(sendBtn);
         choicesContainer.appendChild(inputGroup);
       }
 
-      // 選項按鈕
       const choices = node.getChoices ? node.getChoices() : node.choices;
       if (choices) {
         choices.forEach(choice => {
           const btn = document.createElement('div');
           btn.className = 'choice-btn';
-          btn.innerText = choice.text;
+          btn.innerText = t(choice.text);
           btn.onclick = () => handleChoice(choice);
           choicesContainer.appendChild(btn);
         });
@@ -480,14 +471,19 @@
       choicesContainer.innerHTML = ''; 
       const div = document.createElement('div');
       div.className = 'msg sent';
-      div.innerText = text;
+      div.innerText = t(text);
       chatBg.appendChild(div);
       scrollToBottom();
       await sleep(800);
     }
 
     async function handleChoice(choice) {
-      if (choice.nextNode === 'restart') { location.reload(); return; }
+      if (choice.nextNode === 'restart') { 
+        // 增加死亡次數並存入 sessionStorage，然後重整網頁
+        sessionStorage.setItem('deathCount', deathCount + 1);
+        location.reload(); 
+        return; 
+      }
       await handleSentText(choice.text);
       playNode(choice.nextNode);
     }
