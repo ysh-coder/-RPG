@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v0.6 (Chapter 2)</title>
+  <title>WhatsApp Escape - v0.7 Full Game</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -12,6 +12,7 @@
       overflow: hidden;
     }
     
+    /* 首頁開場畫面 */
     #start-screen {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: #000; color: #fff; display: flex; justify-content: center;
@@ -33,14 +34,44 @@
     #start-btn:hover { background: #008f6f; animation: none; transform: scale(1.05); }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 168, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0); } }
 
+    /* 手機外框與震動動畫 */
     #phone {
       width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
       background: #0B141A; position: relative; display: flex; flex-direction: column;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1); opacity: 0; transition: opacity 3s ease;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1); opacity: 0; transition: opacity 2s ease;
+      overflow: hidden;
     }
     @media (min-width: 500px) {
-      #phone { height: 850px; border-radius: 30px; overflow: hidden; border: 8px solid #222; }
+      #phone { height: 850px; border-radius: 30px; border: 8px solid #222; }
     }
+
+    /* 手機震動 Keyframes */
+    .shake { animation: phoneShake 0.4s ease-in-out; }
+    @keyframes phoneShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-6px, 4px) rotate(-1deg); }
+      40% { transform: translate(6px, -4px) rotate(1deg); }
+      60% { transform: translate(-4px, -2px) rotate(-0.5deg); }
+      80% { transform: translate(4px, 2px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    /* 螢幕雜訊與閃爍遮罩 */
+    #glitch-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.25), rgba(0,0,0,0.25) 1px, transparent 1px, transparent 3px);
+      pointer-events: none; z-index: 90; opacity: 0;
+    }
+    #glitch-overlay.active { animation: glitchAnim 0.4s ease-in-out; }
+    @keyframes glitchAnim {
+      0% { opacity: 0; }
+      20% { opacity: 0.9; filter: hue-rotate(90deg) contrast(200%); background-color: rgba(0, 255, 200, 0.1); }
+      40% { opacity: 0.3; filter: invert(100%); }
+      60% { opacity: 0.8; filter: hue-rotate(180deg) sepia(100%); background-color: rgba(255, 0, 0, 0.1); }
+      80% { opacity: 0.4; }
+      100% { opacity: 0; }
+    }
+
     #status-bar {
       height: 25px; background: #1F2C34; color: white; display: flex;
       justify-content: space-between; padding: 5px 15px 0; align-items: center;
@@ -48,7 +79,6 @@
     }
     #death-counter { color: #FF5252; }
     
-    /* 頂部導航欄 (加入切換動畫) */
     #wa-header {
       background: #1F2C34; color: #E9EDEF; padding: 10px 15px; display: flex;
       align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 10;
@@ -64,7 +94,6 @@
     #wa-header .name { font-weight: 600; font-size: 16px; transition: 0.3s; }
     #wa-header .status { font-size: 13px; color: #8696A0; }
 
-    /* 對話容器 (支援多個聯絡人切換) */
     .chat-bg {
       background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
       background-color: #0B141A; background-blend-mode: overlay; padding: 15px; overflow-y: auto; flex-direction: column;
@@ -114,6 +143,9 @@
   </div>
 
   <div id="phone">
+    <!-- 雜訊遮罩 -->
+    <div id="glitch-overlay"></div>
+
     <div id="status-bar">
       <span id="clock">12:38</span>
       <span id="death-counter">💀 0</span>
@@ -128,7 +160,6 @@
       </div>
     </div>
     
-    <!-- 兩個獨立的對話容器 -->
     <div id="chat-bg-unknown" class="chat-bg active"></div>
     <div id="chat-bg-04" class="chat-bg hidden"></div>
     
@@ -148,11 +179,10 @@
     if(playerName) document.getElementById('player-name').value = playerName;
     document.getElementById('death-counter').innerText = `💀 死亡次數: ${deathCount}`;
 
-    // 遊戲全局狀態 (包含第二章抉擇)
     let gameState = {
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
       exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false, knownClue1: false,
-      trusted04: false // 第二章關鍵分歧點
+      trusted04: false
     };
 
     function t(text) {
@@ -161,7 +191,24 @@
       return text.replace(/\{name\}/g, nameToUse);
     }
 
-    // 聯絡人系統狀態
+    // 觸發雜訊特效與手機物理震動
+    function triggerGlitchAndVibrate() {
+      const phone = document.getElementById('phone');
+      const glitch = document.getElementById('glitch-overlay');
+      
+      phone.classList.remove('shake');
+      glitch.classList.remove('active');
+      
+      void phone.offsetWidth; // 觸發重繪
+      
+      phone.classList.add('shake');
+      glitch.classList.add('active');
+      
+      if ("vibrate" in navigator) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    }
+
     let activeChat = 'unknown'; 
     const chatData = {
       'unknown': { name: '未知號碼', avatar: '?', color: '#DFE5E7' },
@@ -171,7 +218,8 @@
     function switchChatUI(chatId) {
       if (activeChat === chatId && document.getElementById('chat-bg-' + chatId).classList.contains('active')) return;
       
-      // 切換背景顯示
+      triggerGlitchAndVibrate(); // 切換聊天室時觸發雜訊與震動
+
       document.querySelectorAll('.chat-bg').forEach(el => {
         el.classList.remove('active');
         el.classList.add('hidden');
@@ -179,7 +227,6 @@
       document.getElementById('chat-bg-' + chatId).classList.remove('hidden');
       document.getElementById('chat-bg-' + chatId).classList.add('active');
       
-      // 更新 Header
       const headerObj = chatData[chatId];
       document.getElementById('header-name').innerText = headerObj.name;
       document.getElementById('header-avatar').innerText = headerObj.avatar;
@@ -196,45 +243,264 @@
     }
 
     const storyData = {
-      // ===== 序章與第一章精簡 (承接至 chap1_end) =====
+      // ==================== 【序幕：窒息之匣】 ====================
       start: {
         chat: 'unknown',
-        system: "【序章：窒息之匣】\n一陣暈眩後，{name}從黑暗中甦醒。被埋在不知名的地下，氧氣稀薄。",
-        messages: ["別出聲，深呼吸。聽從我的指示，你才有機會活下來。"],
-        choices: [{ text: "（快速跳過序章與第一章，進入第二章）", nextNode: "chap2_start" }]
+        system: "【序章：窒息之匣】\n一陣劇烈的暈眩後，{name}從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。{name}的胸腔感到沉重的壓迫，每一次呼吸都極度費力。",
+        messages: ["{name}醒了。", "{name}的心跳聲大到連我在上面都聽得見。"],
+        choices: [
+          { text: "我是誰？！救命啊！！！", nextNode: "panic_shout" },
+          { text: "這是在哪裡？你想怎樣？", nextNode: "ask_calm" },
+          { text: "（保持沉默，冷靜觀察）", nextNode: "stay_silent" }
+        ]
+      },
+      panic_shout: {
+        chat: 'unknown',
+        action: () => {
+          setTimeout(() => {
+            const sfx = new Audio('soundeffect01.mp3');
+            sfx.play().catch(e => console.log("音效未就緒", e));
+          }, 3500); 
+        },
+        messages: ["🔊 [語音訊息 0:04]"],
+        system: "【系統】：語音訊息中傳來{name}聲嘶力竭的慘叫聲，但伴隨著沉悶的回音。厚重的泥土吞噬了聲音。",
+        messagesAfter: ["每尖叫一次，就消耗了原本能讓{name}多活兩分鐘的氧氣。", "繼續叫，我喜歡聽。"],
+        choices: [{ text: "不...我不叫了。救我。", nextNode: "explore_hub" }]
+      },
+      ask_calm: {
+        chat: 'unknown',
+        messages: ["我是{name}現在唯一能抓住的繩子。", "別浪費力氣打字。{name}現在被埋在地下，氧氣有限。"],
+        choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
+      },
+      stay_silent: {
+        chat: 'unknown',
+        messages: ["很好，{name}比上一件『垃圾』冷靜多了。", "聽從我的指示，{name}才有機會活下來。"],
+        choices: [{ text: "我該怎麼做？", nextNode: "explore_hub" }]
+      },
+      explore_hub: {
+        chat: 'unknown',
+        messages: ["用雙手確認周遭的環境。動作要小。"],
+        getChoices: () => {
+          let choices = [];
+          if (!gameState.exploredLeft) choices.push({ text: "摸索左側的木板", nextNode: "explore_left" });
+          if (!gameState.exploredRight) choices.push({ text: "摸索右側的角落", nextNode: "explore_right" });
+          if (!gameState.foundLighter) choices.push({ text: "摸索自己的外套", nextNode: "explore_pocket" });
+          if (gameState.foundLighter && !gameState.foundNail) choices.push({ text: "摸索木箱底部的夾縫", nextNode: "explore_bottom" });
+          if (gameState.foundNail) choices.push({ text: "用生鏽鐵釘撬頭頂的木板！", nextNode: "footsteps_approach" });
+          return choices;
+        }
+      },
+      explore_left: {
+        chat: 'unknown',
+        system: "【系統】：{name}摸到粗糙的木頭紋理與刮痕。順著凹槽，發現是有人用指甲刻出來的字...",
+        systemDanger: "「不要相信手機裡的人」",
+        action: () => { gameState.exploredLeft = true; },
+        messages: ["摸到了什麼嗎？"],
+        choices: [{ text: "沒...沒有。", nextNode: "explore_hub" }]
+      },
+      explore_right: {
+        chat: 'unknown',
+        system: "【系統】：{name}摸到一個破損的西裝口袋，裡面裝著一截已經發黑、戴著純金婚戒的斷指。",
+        action: () => { gameState.exploredRight = true; },
+        messages: ["那個戒指原本挺值錢的，可惜弄髒了。繼續找。"],
+        choices: [{ text: "（強忍嘔吐感繼續摸索）", nextNode: "explore_hub" }]
+      },
+      explore_pocket: {
+        chat: 'unknown',
+        system: "【系統】：{name}在自己的外套內袋裡，摸到了一個金屬打火機。",
+        action: () => { gameState.foundLighter = true; },
+        messages: ["{name}在猶豫什麼？"],
+        choices: [
+          { text: "點燃打火機，我想看清這裡！", nextNode: "lighter_death" },
+          { text: "（把打火機收起來，繼續在黑暗中摸索）", nextNode: "explore_hub" }
+        ]
+      },
+      lighter_death: {
+        chat: 'unknown',
+        messages: ["熄滅它！{name}這個蠢貨！！！"],
+        system: "【結局：作繭自縛】\n火光亮起的瞬間，狹小空間內僅存的氧氣被迅速抽乾。幽藍的火焰閃爍兩下便熄滅，在劇烈的抽搐與窒息中，意識徹底陷入黑暗。",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+      explore_bottom: {
+        chat: 'unknown',
+        system: "【系統】：{name}忍受著劇痛，硬生生地從接縫中拔出了一根「生鏽長鐵釘」。",
+        action: () => { gameState.foundNail = true; },
+        messages: ["好極了。現在，對準正上方那塊有水漬的木板邊緣..."],
+        choices: [{ text: "準備撬開木板", nextNode: "explore_hub" }]
+      },
+      footsteps_approach: {
+        chat: 'unknown',
+        system: "【系統】：木箱頂部傳來沉悶的重壓感，沙土簌簌落下。上方傳來了極其沉重的腳步聲...",
+        messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
+        choices: [
+          { text: "（死命憋氣）", nextNode: "breath_1" },
+          { text: "（忍不住喘氣）", nextNode: "breath_death" }
+        ]
+      },
+      breath_1: {
+        chat: 'unknown',
+        system: "【系統】：沉重的腳步聲就在{name}鼻尖正上方停下。肺部開始發熱。",
+        messages: ["（對方沒有傳送訊息，螢幕上的「正在輸入」閃爍不定）"],
+        choices: [
+          { text: "（繼續憋氣，咬緊牙關）", nextNode: "breath_2" },
+          { text: "（大口喘氣）", nextNode: "breath_death" }
+        ]
+      },
+      breath_2: {
+        chat: 'unknown',
+        system: "【系統】：{name}感覺眼冒金星。上方傳來鐵鍬拍打泥土的聲音...",
+        messages: ["...撐住。"],
+        choices: [
+          { text: "（死不張口，眼前發黑）", nextNode: "breath_success" },
+          { text: "（真的撐不住了...）", nextNode: "breath_death" }
+        ]
+      },
+      breath_death: {
+        chat: 'unknown',
+        system: "【結局：無處可逃】\n咳嗽聲在木箱內迴盪。腳步聲停止，接著是鐵鍬瘋狂挖泥聲，伴隨著電鋸震耳欲聾的轟鳴聲...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+      breath_success: {
+        chat: 'unknown',
+        system: "【系統】：腳步聲遠去。{name}終於可以貪婪地吸入帶著霉味的微薄空氣。",
+        messages: ["他走了。{name}還有最後三十秒。", "用那根鐵釘，拼死撬開正上方那塊木板！"],
+        choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
+      },
+      pry_board: {
+        chat: 'unknown',
+        system: "【系統】：鐵釘斷成了兩截。就在這最絕望的瞬間，木板破裂，爛泥如同瀑布般傾瀉而下，掩埋了口鼻！",
+        choices: [{ text: "不顧一切往上扒土！！！", nextNode: "chap1_start" }]
+      },
+
+      // ==================== 【第一章：鐵鏽與血】 ====================
+      chap1_start: {
+        chat: 'unknown',
+        system: "【第一章：鐵鏽與血】\n{name}拼命扒開泥土爬出淺坑。你身處一個陰冷的廢棄地下室，天花板鎢絲燈閃爍不定。",
+        messages: ["看來{name}命挺大的。", "但這只是他為你準備的『遊樂場』。你大概有 15 分鐘的時間逃出這個房間。"],
+        choices: [
+          { text: "這到底是哪裡？他到底是誰？", nextNode: "ask_who_chap1" },
+          { text: "我該怎麼做？", nextNode: "chap1_hub" }
+        ]
+      },
+      ask_who_chap1: {
+        chat: 'unknown',
+        messages: ["一個喜歡在 Speed Dating 派對上尋找完美獵物的人。", "還記得在派對上的『配對號碼』嗎？胸前貼著幾號？"],
+        system: "【系統】：大腦一陣劇痛。{name}想起胸前貼著一張貼紙，上面寫著數字『27』。",
+        messagesAfter: ["想起來了嗎？這很重要。現在，仔細搜查周圍的環境。"],
+        choices: [{ text: "好，我看看四周。", nextNode: "chap1_hub" }]
+      },
+      chap1_hub: {
+        chat: 'unknown',
+        system: "【系統】：左邊角落有生鏽鐵櫃；正前方是厚重鐵門；右邊地上有惡臭排水口；身後是剛剛爬出來的泥坑。",
+        getChoices: () => {
+          let choices = [];
+          if (!gameState.exploredMud) choices.push({ text: "檢查剛剛爬出來的泥坑", nextNode: "chap1_mud" });
+          if (!gameState.hasKeycard) choices.push({ text: "檢查地上的排水口", nextNode: "chap1_drain" });
+          if (!gameState.cabinetOpen) choices.push({ text: "檢查生鏽的鐵櫃", nextNode: "chap1_cabinet" });
+          if (gameState.hasKeycard) choices.push({ text: "用房卡去刷鐵門的感應器！", nextNode: "chap1_door_final" });
+          else choices.push({ text: "檢查厚重的鐵門", nextNode: "chap1_door_locked" });
+          return choices;
+        }
+      },
+      chap1_mud: {
+        chat: 'unknown',
+        system: "【系統】：在爛泥中摸到一張半埋著的照片。照片背面用紅筆寫著數字：『04』。",
+        action: () => { gameState.exploredMud = true; gameState.knownClue1 = true; },
+        messages: ["找到什麼了嗎？不要錯過任何數字。"],
+        choices: [{ text: "一張寫著『04』的照片。", nextNode: "chap1_hub" }]
+      },
+      chap1_door_locked: {
+        chat: 'unknown',
+        system: "【系統】：鐵門旁安裝著一個老舊刷卡機，亮著紅燈。你需要一張卡。",
+        messages: ["別白費力氣推門。你需要找到他的磁卡。"],
+        choices: [{ text: "回去尋找其他地方。", nextNode: "chap1_hub" }]
+      },
+      chap1_drain: {
+        chat: 'unknown',
+        system: () => {
+          if (gameState.hasHook) return "【系統】：{name}拿出鐵櫃裡找到的生鏽鐵勾伸進排水口...成功勾出一張沾滿污垢的【電子房卡】！";
+          return "【系統】：排水口深處有東西反光。伸手進去時手背被鋒利鐵絲割開一道口子！你需要某種工具。";
+        },
+        action: () => {
+          if (gameState.hasHook) gameState.hasKeycard = true;
+          gameState.exploredDrain = true;
+        },
+        messages: () => {
+          if (gameState.hasHook) return ["拿到房卡了？幹得好！快去開門！"];
+          return ["別用手去抓，找個能勾東西的工具。"];
+        },
+        choices: [{ text: "返回尋找工具", nextNode: "chap1_hub" }]
+      },
+      chap1_cabinet: {
+        chat: 'unknown',
+        system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
+        messages: ["密碼通常是他最得意的戰利品編號。想想泥坑留下的數字(04)，加上派對號碼(27)。"],
+        inputNode: true,
+        choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
+      },
+      chap1_cabinet_fail: {
+        chat: 'unknown',
+        system: "【系統】：密碼錯誤。鎖頭毫無反應。",
+        choices: [{ text: "再試一次", nextNode: "chap1_cabinet" }, { text: "去檢查別的地方", nextNode: "chap1_hub" }]
+      },
+      chap1_cabinet_success: {
+        chat: 'unknown',
+        system: "【系統】：『喀啦』一聲密碼鎖開了。櫃子裡放著【生鏽長鐵勾】、摔碎的手機與止痛藥。",
+        action: () => { gameState.cabinetOpen = true; gameState.hasHook = true; },
+        messages: ["拿上能用的東西，去把排水口裡的東西弄出來。"],
+        choices: [{ text: "拿走鐵勾，離開鐵櫃", nextNode: "chap1_hub" }]
+      },
+      chap1_door_final: {
+        chat: 'unknown',
+        system: "【系統】：正當舉起手準備刷卡時，手機突然狂震！",
+        messages: ["等等！！！", "別刷卡！！！", "馬上找地方躲起來！！！"],
+        systemDanger: "【系統】：門外傳來金屬拖行聲與腳步聲，停在鐵門外。門把手開始轉動...",
+        choices: [
+          { text: "不管了！刷卡衝出去！", nextNode: "death_door_rush" },
+          { text: "躲進鐵櫃裡！", nextNode: "hide_cabinet" }
+        ]
+      },
+      death_door_rush: {
+        chat: 'unknown',
+        system: "【結局：羊入虎口】\n門被拉開，戴著豬頭面具的壯漢手持消防斧站在門外。斧頭朝{name}劈下...",
+        choices: [{ text: "重新開始", nextNode: "restart" }]
+      },
+      hide_cabinet: {
+        chat: 'unknown',
+        system: "【系統】：{name}鑽進鐵櫃。透過縫隙，看到豬頭屠夫扔下一個滴血的黑色塑膠袋，並看向鐵櫃...",
+        choices: [{ text: "（死死捂住自己的嘴巴）", nextNode: "chap1_end" }]
       },
       chap1_end: {
         chat: 'unknown',
-        system: "【第一章完結】\n戴著豬頭面具的男人離開了地下室，鐵門再次鎖上。",
-        choices: [{ text: "繼續", nextNode: "chap2_start" }]
+        system: "【系統】：屠夫轉身離開地下室，鐵門再次鎖上。\nWhatsApp 傳來訊息：『出來吧。現在，準備進入走廊...』",
+        choices: [{ text: "推開櫃門，進入走廊", nextNode: "chap2_start" }]
       },
 
       // ==================== 【第二章：信任的盲區】 ====================
       chap2_start: {
         chat: 'unknown',
-        system: "【第二章：信任的盲區】\n地下室的空氣依然渾濁。{name}躲在鐵櫃裡，確認外面沒有動靜後，緩緩推開了櫃門。",
-        messages: ["出來吧。他已經走遠了。", "用你拿到的房卡刷開那扇鐵門，準備進入走廊。速度要快，他隨時會折返。"],
+        system: "【第二章：信任的盲區】\n地下室的空氣依然渾濁。{name}確認外面沒有動靜後，緩緩推開了鐵櫃門。",
+        messages: ["出來吧。他已經走遠了。", "用房卡刷開那扇鐵門，準備進入走廊。速度要快。"],
         choices: [{ text: "我刷開門了。外面是一條很暗的長走廊。", nextNode: "chap2_corridor" }]
       },
       chap2_corridor: {
         chat: 'unknown',
-        messages: ["走廊盡頭有兩個房間。左邊是『廢棄鍋爐房』，右邊是『標本室』。", "聽好，左邊的鍋爐房結構已經坍塌，裡面全是積水和漏電的電纜。絕對不要靠近。", "走右邊。進入標本室，那裡有通往貨運電梯的暗門。"],
+        messages: [
+          "走廊盡頭有兩個房間。左邊是『廢棄鍋爐房』，右邊是『標本室』。",
+          "左邊的鍋爐房結構已經坍塌，裡面全是漏電電纜。絕對不要靠近。",
+          "進入右邊標本室，那裡有通往貨運電梯的暗門。"
+        ],
         choices: [{ text: "好，我往右邊走...", nextNode: "chap2_interrupt" }]
       },
       chap2_interrupt: {
-        chat: 'unknown', // 仍在 unknown 視窗，但發生異變
-        systemDanger: "【系統異常】：手機突然發出刺耳的雜音！屏幕瘋狂閃爍，一個未知的加密訊號強行覆蓋了當前的網路節點！",
-        action: () => {
-          setTimeout(() => {
-            const sfx = new Audio('soundeffect01.mp3'); // 延用驚悚音效
-            sfx.play().catch(e => {});
-          }, 500);
-        },
+        chat: 'unknown',
+        systemDanger: "【系統異常】：手機發出刺耳雜音與劇烈震動！螢幕瘋狂閃爍，一個未知的加密訊號強行覆蓋了網路！",
+        action: () => { triggerGlitchAndVibrate(); },
         choices: [{ text: "【點擊查看強制彈出的新訊息】", nextNode: "chap2_04_intro", isHack: true }]
       },
       chap2_04_intro: {
-        chat: '04', // 強制切換到 04
-        systemHack: "【系統】：已強制切換至加密頻道。對方隱藏了號碼，頭像顯示為一個紅色的警告標誌。",
+        chat: '04',
+        systemHack: "【系統】：已強制切換至加密頻道。對方隱藏了號碼，頭像顯示為紅色警告標誌。",
         messages: ["停下！！！", "千萬別聽他的！退回去！", "如果你進了右邊的標本室，你就死定了！"],
         choices: [
           { text: "你是誰？！", nextNode: "chap2_04_explain" },
@@ -245,35 +511,38 @@
         chat: '04',
         messages: [
           "我是『04號』。還記得你在泥坑裡挖到的那張照片嗎？那就是我。", 
-          "我三天前被抓來這裡，我裝死才逃過一劫。現在我躲在通風管道裡，黑進了這裡的 WiFi 才能跟你聯絡。",
-          "聽著，一直跟你對話的那個『未知號碼』，他根本不是來救你的！他就是那個把我們關進來的變態！",
-          "他在享受『引導』獵物步入陷阱的快感。右邊的標本室裡佈滿了紅外線毒氣陷阱，你一進去就會被鎖死，變成他浸泡在福爾馬林裡的新玩具！"
+          "我三天前被抓來這裡，我裝死才逃過一劫。現在我躲在通風管道裡，黑進了 WiFi 才能跟你聯絡。",
+          "聽著，一直跟你對話的那個『未知號碼』，他就是把你關進來的變態！",
+          "右邊的標本室裡佈滿了紅外線毒氣陷阱，你一進去就會被鎖死！"
         ],
         choices: [{ text: "那我該怎麼辦？", nextNode: "chap2_04_plead" }]
       },
       chap2_04_plead: {
         chat: '04',
-        messages: ["去左邊的鍋爐房！那裡根本沒有漏電！", "鍋爐房裡有一個生鏽的通風口，用你身上的工具撬開它。爬進來找我，我們一起從排氣井逃出去！", "求求你相信我...我是唯一能幫你的人了。"],
+        messages: [
+          "去左邊的鍋爐房！那裡根本沒有漏電！",
+          "鍋爐房裡有一個生鏽的通風口，用你身上的工具撬開它。爬進來找我，我們一起逃出去！",
+          "求求你相信我..."
+        ],
         choices: [
           { text: "（切換回『未知號碼』質問他）", nextNode: "chap2_ask_unknown" },
           { text: "好，我相信你，我去左邊的鍋爐房。", nextNode: "chap2_go_boiler" }
         ]
       },
       chap2_ask_unknown: {
-        chat: 'unknown', // 切換回 Unknown
-        system: "【系統】：你切換回原本的對話視窗。你感覺手心全是冷汗，心臟狂跳。",
-        messages: ["怎麼停下來了？", "你在走廊上多停留一秒，死亡的機率就增加 10%。快進標本室。"],
-        choices: [{ text: "剛才有個自稱『04』的人聯絡我。他說你就是兇手，標本室裡有毒氣！", nextNode: "chap2_unknown_defend" }]
+        chat: 'unknown',
+        system: "【系統】：你切換回原本的對話視窗。手心全是冷汗。",
+        messages: ["怎麼停下來了？", "快進標本室。"],
+        choices: [{ text: "剛才自稱『04』的人聯絡我。他說你就是兇手，標本室有毒氣！", nextNode: "chap2_unknown_defend" }]
       },
       chap2_unknown_defend: {
         chat: 'unknown',
         messages: [
           "……",
-          "04？他居然還活著。",
-          "聽好，{name}。04 已經瘋了。他在幽閉的通風管道裡待了太久，吸入了廢氣，產生了嚴重的被害妄想症。",
-          "這是一場殘酷的生存遊戲，有它嚴格的規則。我如果是兇手，我大可直接讓那個戴豬頭面具的屠夫在第一章就把你砍成肉泥。",
-          "04 想騙你去鍋爐房。那裡的維修通道早就被屠夫佈滿了觸發式捕獸夾。他太害怕了，他想引誘你進去觸發陷阱，好給他自己爭取逃跑的時間。",
-          "信不信由你。右轉進標本室，陷阱我已經遠端癱瘓了。這是我最後一次警告。"
+          "04 已經瘋了。他在通風管道裡待太久產生了被害妄想症。",
+          "我如果是兇手，我大可直接讓屠夫在第一章就把你砍成肉泥。",
+          "04 想騙你去鍋爐房。那裡的通道早就佈滿了捕獸夾。他想拿你當引誘屠夫的誘餌！",
+          "信不信由你。右轉進標本室，這是我最後一次警告。"
         ],
         choices: [
           { text: "【相信未知號碼】前往右邊的標本室", nextNode: "chap2_go_specimen" },
@@ -281,30 +550,30 @@
         ]
       },
 
-      // ==================== 分支 A：信任未知號碼 (標本室) ====================
+      // 分歧 A：標本室
       chap2_go_specimen: {
         chat: 'unknown',
-        system: "【系統】：你咬緊牙關，決定無視 04 的警告。你向右轉，推開了沉重的橡木門，進入了『標本室』。",
+        system: "【系統】：你無視 04 的警告，向右轉推開橡木門進入『標本室』。",
         action: () => { gameState.trusted04 = false; },
         messages: ["明智的選擇。進去後把門鎖上。"],
         choices: [{ text: "我進來了，這裡沒有毒氣。", nextNode: "chap2_specimen_explore" }]
       },
       chap2_specimen_explore: {
         chat: 'unknown',
-        system: "【系統】：房間裡瀰漫著刺鼻的防腐劑氣味。四周的鐵架上擺滿了巨大的玻璃罐，裡面浸泡著各種動物的殘肢……甚至還有幾顆人類的眼球。房間的盡頭有一扇紅色的鐵閘門，上面寫著『EXIT』。",
-        messages: ["很好。看到那扇紅色閘門了嗎？那是通往貨運電梯的唯一出口。"],
+        system: "【系統】：房間裡擺滿了玻璃罐。盡頭有一扇寫著『EXIT』的紅色鐵閘門。",
+        messages: ["看到那扇紅色閘門了嗎？那是通往貨運電梯的唯一出口。"],
         choices: [{ text: "我看到了，但門上有一個電子密碼鎖。", nextNode: "chap2_specimen_panic" }]
       },
       chap2_specimen_panic: {
         chat: 'unknown',
-        systemDanger: "【系統】：就在這時，標本室外傳來了電鋸啟動的轟鳴聲！那個豬頭屠夫回來了！電鋸正在瘋狂切割你身後的木門，木屑四處飛濺！",
+        systemDanger: "【系統】：門外傳來電鋸轟鳴聲！豬頭屠夫正在疯狂切割身後的木門！",
         messages: ["屠夫發現你了！", "密碼是『1031』！快輸入密碼開門！"],
         choices: [{ text: "（手機震動！04 傳來訊息！）", nextNode: "chap2_04_final_warning", isHack: true }]
       },
       chap2_04_final_warning: {
         chat: '04',
-        systemHack: "【系統】：04 強制彈出訊息，字體因為發送者的恐慌而顯得凌亂。",
-        messages: ["不要輸入密碼！！！", "那扇門後面根本不是電梯！那是絞肉機的傳送帶！你一開門就會掉進去！", "快躲到標本櫃後面！相信我！！！"],
+        systemHack: "【系統】：04 強制彈出訊息，字體充滿恐慌。",
+        messages: ["不要輸入密碼！！！", "門後面是絞肉機傳送帶！快躲到標本櫃後面！相信我！！！"],
         choices: [
           { text: "【聽從未知號碼】輸入密碼 1031 衝出紅門！", nextNode: "chap2_red_door_open" },
           { text: "【聽從 04】放棄開門，躲到櫃子後面！", nextNode: "chap2_hide_cabinet_death" }
@@ -312,60 +581,60 @@
       },
       chap2_red_door_open: {
         chat: 'unknown',
-        system: "【系統】：木門即將被電鋸劈碎。你顫抖著雙手輸入了 1031，『嗶』的一聲，紅色鐵閘門彈開！你閉上眼睛猛地衝了進去，並反手鎖死了厚重的鐵門。電鋸的聲音被隔絕在外。",
+        system: "【系統】：你顫抖著輸入 1031，紅色鐵閘門彈開！你衝進去反鎖了門。電鋸聲被隔絕在外。",
         messages: ["你活下來了。"],
         messagesAfter: [
-          "門後面確實是貨運電梯。我說過，我從不對遵守遊戲規則的人撒謊。",
+          "門後面確實是貨運電梯。我從不對遵守規則的人撒謊。",
           "至於 04... 他的自作聰明會讓他付出代價。",
           "電梯正在下降。準備迎接第三章吧。"
         ],
-        choices: [{ text: "（第二章 完）", nextNode: "chap3_coming_soon" }]
+        choices: [{ text: "（第二章 完結）", nextNode: "chap3_coming_soon" }]
       },
       chap2_hide_cabinet_death: {
         chat: '04',
-        system: "【結局：被辜負的信任】\n你選擇相信 04，放棄了近在咫尺的紅門，轉身躲到了標本櫃後方。下一秒，木門被徹底劈碎。豬頭屠夫提著電鋸走了進來。\n屠夫連找都沒找，徑直走向你的藏身處。他一把掀開櫃子，面具下傳出沉悶的笑聲。\n04 的訊息再次傳來：『對不起...如果他不殺你，他就會來管線裡找我...謝謝你替我死。』\n電鋸無情地落下...",
+        system: "【結局：被辜負的信任】\n你選擇相信 04 躲在櫃子後。木門被劈碎，屠夫徑直走過來掀開櫃子。\n04 的訊息傳來：『對不起...如果他不殺你，他就會來找我...謝謝你替我死。』\n電鋸無情地落下...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
-      // ==================== 分支 B：信任 04 (鍋爐房) ====================
+      // 分歧 B：鍋爐房
       chap2_go_boiler: {
         chat: '04',
-        system: "【系統】：你決定不相信那個把你視為玩具的『未知號碼』。你向左轉，推開了半掩的鐵門，走進了『廢棄鍋爐房』。",
+        system: "【系統】：你推開半掩的鐵門，走進『廢棄鍋爐房』。",
         action: () => { gameState.trusted04 = true; },
-        messages: ["太好了！你做出了正確的選擇！", "這裡很安全，沒有漏電對吧？他一直在騙你！"],
+        messages: ["太好了！你做出了正確的選擇！", "這裡很安全，他一直在騙你！"],
         choices: [{ text: "這裡很熱，蒸汽瀰漫。我接下來該怎麼辦？", nextNode: "chap2_boiler_explore" }]
       },
       chap2_boiler_explore: {
         chat: '04',
-        system: "【系統】：（未知號碼傳來一則訊息，但你直接滑掉了它）。你在鍋爐房的角落，發現了一個被幾根鐵條封死的通風口，裡面黑漆漆的。",
-        messages: ["看到通風口了嗎？", "用你第一章拿到的『生鏽長鐵勾』把它撬開，爬進來！管道盡頭就是出口！"],
+        system: "【系統】：你在角落發現一個被鐵條封死的通風口。",
+        messages: ["用你第一章拿到的『生鏽長鐵勾』把它撬開，爬進來！"],
         choices: [{ text: "好，我正在撬開通風口...", nextNode: "chap2_boiler_crawl" }]
       },
       chap2_boiler_crawl: {
         chat: '04',
-        system: "【系統】：你費盡九牛二虎之力撬開了通風口，並吃力地往狹窄的管道裡爬。裡面充滿了灰塵與老鼠的屍臭味。你只能用手肘匍匐前進。",
+        system: "【系統】：你撬開通風口吃力地往裡爬。通道越來越窄。",
         messages: ["對，繼續爬...你快到了..."],
         choices: [{ text: "通道越來越窄了，我什麼都看不見！", nextNode: "chap2_boiler_trap" }]
       },
       chap2_boiler_trap: {
         chat: '04',
-        systemDanger: "【系統】：突然，你的手在黑暗中按到了一個冰冷、尖銳的金屬物體。你摸索了一下，心臟瞬間涼了半截——那是一個張開著血盆大口的『重型捕獸夾』，而且連接著引爆線！只要你再往前爬半寸，不僅手腕會被切斷，還會觸發上方的鐵刺陷阱！",
+        systemDanger: "【系統】：你在黑暗中按到一個尖銳硬物——那是張開著血盆大口的『重型捕獸夾』，連接著引爆機關！",
         messages: [
           "對不起...",
-          "未知號碼說得對...我瘋了...我太害怕了...",
-          "如果屠夫在鍋爐房抓到你，他就會停止搜索，我就安全了...對不起，{name}。謝謝你當我的誘餌。"
+          "未知號碼說得對...我太害怕了...",
+          "如果屠夫在鍋爐房抓到你，他就會停止搜索...對不起，{name}。謝謝你當誘餌。"
         ],
         choices: [{ text: "你這個瘋子！！！", nextNode: "chap2_boiler_panic" }]
       },
       chap2_boiler_panic: {
         chat: 'unknown',
-        systemHack: "【系統】：04 斷開了連線。螢幕閃爍，切換回了『未知號碼』的對話視窗。",
+        systemHack: "【系統】：04 斷開連線，視窗切換回『未知號碼』。",
         messages: [
           "我警告過你的，{name}。",
           "信任一個崩潰的失敗者，是你犯下最大的錯誤。",
-          "現在，屠夫已經進入鍋爐房了。他聽到了你撬開通風口的聲音。"
+          "屠夫聽到聲音，已經進入鍋爐房了。"
         ],
-        systemDanger: "【系統】：管道外傳來沉重的腳步聲，接著是屠夫粗重的喘息聲。他正拿著手電筒往通風口裡照，強光刺痛了你的眼睛。他正在往裡面伸手抓你的腳踝！",
+        systemDanger: "【系統】：屠夫拿著手電筒往通風口裡照，強光刺痛眼睛，他正伸手抓你的腳踝！",
         choices: [
           { text: "往前爬！賭捕獸夾不會觸發！", nextNode: "chap2_boiler_death" },
           { text: "死命往後踹！踢他的臉！", nextNode: "chap2_boiler_escape" }
@@ -373,16 +642,15 @@
       },
       chap2_boiler_death: {
         chat: 'unknown',
-        system: "【結局：作繭自縛】\n你恐懼到了極點，閉上眼睛不顧一切地往前衝。『喀嚓』一聲巨響，捕獸夾狠狠咬碎了你的手臂。劇痛還未傳遍全身，上方機關觸發，三根生鏽的鋼筋貫穿了你的背部，將你死死釘在狹窄的通風管道中。你在無盡的痛苦與黑暗中慢慢流血致死...",
+        system: "【結局：作繭自縛】\n捕獸夾咬碎了你的手臂，鋼筋從上方貫穿背部，你被死死釘在狹窄的管道中...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
       chap2_boiler_escape: {
         chat: 'unknown',
-        system: "【系統】：你用盡全身力氣，雙腳瘋狂亂踹，厚重的皮鞋剛好狠狠踹中了屠夫的眼窩！屠夫發出殺豬般的慘叫，向後倒退。你趁機以極其扭曲的姿勢向後退出了通風口，重重摔在鍋爐房的地上。",
+        system: "【系統】：你用盡全力雙腳亂踹，踢中屠夫眼窩！你趁機摔出通風口。",
         messages: ["反應不錯。"],
         messagesAfter: [
-          "趁他還沒爬起來，看到旁邊那個紅色的維修電梯了嗎？",
-          "衝進去，按下向下的按鈕。",
+          "衝進旁邊紅色的維修電梯，按下向下的按鈕。",
           "希望這次你學到教訓了：在這個地獄裡，唯一能信任的，只有遊戲規則。"
         ],
         choices: [{ text: "衝進電梯，按下按鈕！(第二章 完)", nextNode: "chap3_coming_soon" }]
@@ -390,7 +658,7 @@
 
       chap3_coming_soon: {
         chat: 'unknown',
-        system: "【系統提示】：恭喜您完成《WhatsApp Escape》第一、第二章的試玩！\n\n您的選擇決定了您的命運，也決定了 04 號的生死。電梯正在緩緩下降，更深層的恐懼與謎題，將在第三章揭曉。\n\n感謝遊玩！",
+        system: "【系統提示】：恭喜您完成《WhatsApp Escape》第一、二章完整體驗！\n\n電梯正在緩緩下降，第三章敬請期待。\n\n感謝遊玩！",
         choices: [{ text: "重新體驗不同的選擇", nextNode: "restart" }]
       }
     };
@@ -425,7 +693,6 @@
 
       if (node.action) node.action();
 
-      // 處理聯絡人切換
       const targetChat = node.chat || 'unknown';
       if (activeChat !== targetChat) {
         switchChatUI(targetChat);
@@ -494,6 +761,23 @@
         }
       }
 
+      if (node.inputNode) {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group';
+        const inputField = document.createElement('input');
+        inputField.type = 'text'; inputField.placeholder = '輸入四位數字...'; inputField.maxLength = 4;
+        const sendBtn = document.createElement('button');
+        sendBtn.innerText = '嘗試開鎖';
+        sendBtn.onclick = async () => {
+          const val = inputField.value;
+          await handleSentText("輸入了: " + val);
+          if (val === '0427') playNode("chap1_cabinet_success");
+          else playNode("chap1_cabinet_fail");
+        };
+        inputGroup.appendChild(inputField); inputGroup.appendChild(sendBtn);
+        choicesContainer.appendChild(inputGroup);
+      }
+
       const choices = node.getChoices ? node.getChoices() : node.choices;
       if (choices) {
         choices.forEach(choice => {
@@ -525,7 +809,6 @@
         return; 
       }
       
-      // 如果不是系統強制跳轉按鈕，就顯示玩家發送的文字
       if (!choice.text.includes('【點擊查看')) {
         await handleSentText(choice.text);
       } else {
