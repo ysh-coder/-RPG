@@ -162,7 +162,15 @@
           { text: "（保持沉默，冷靜觀察）", nextNode: "stay_silent" }
         ]
       },
-      panic_shout: {
+            panic_shout: {
+        action: () => {
+          // 因為 playNode 執行時會先顯示 1.5 秒的系統訊息，
+          // 我們設定大約 3.5 秒後（配合「正在輸入...」的時間）播放音效
+          setTimeout(() => {
+            const sfx = new Audio('soundeffect01.mp3');
+            sfx.play().catch(e => console.log("音效播放失敗，請確認檔案路徑或瀏覽器權限", e));
+          }, 3500); 
+        },
         messages: ["🔊 [語音訊息 0:04]"],
         system: "【系統】：語音訊息中傳來你剛剛聲嘶力竭的慘叫聲，但伴隨著從外部錄製的沉悶回音。厚重的泥土完全吞噬了你的聲音。",
         messagesAfter: ["你每尖叫一次，就消耗了原本能讓你多活兩分鐘的氧氣。", "繼續叫，我喜歡聽。"],
