@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Escape - v1.3 Speed Dating Mystery Update</title>
+  <title>LAST LIGHT: WhatsApp Escape v1.3</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -14,11 +14,12 @@
     
     #start-screen {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; color: #fff; display: flex; justify-content: center;
+      background: #05080a; color: #fff; display: flex; justify-content: center;
       align-items: center; z-index: 100; flex-direction: column;
-      transition: opacity 2s ease;
+      transition: opacity 1.5s ease;
     }
-    #start-screen h1 { letter-spacing: 5px; color: #00A884; margin-bottom: 40px; font-weight: 300; }
+    #start-screen h1 { letter-spacing: 6px; color: #00A884; margin-bottom: 5px; font-weight: 300; text-shadow: 0 0 10px rgba(0,168,132,0.5); }
+    #start-screen .subtitle { color: #8696A0; font-size: 13px; margin-bottom: 35px; letter-spacing: 2px; }
     #player-name {
       background: #1F2C34; border: 1px solid #8696A0; color: #E9EDEF;
       padding: 15px; border-radius: 10px; outline: none; font-size: 16px;
@@ -36,11 +37,19 @@
     #phone {
       width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
       background: #0B141A; position: relative; display: flex; flex-direction: column;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1); opacity: 0; transition: opacity 2s ease;
+      box-shadow: 0 0 25px rgba(0,0,0,0.8); opacity: 0; transition: opacity 1.5s ease;
       overflow: hidden;
     }
     @media (min-width: 500px) {
       #phone { height: 850px; border-radius: 30px; border: 8px solid #222; }
+    }
+
+    #phone.dark-mode { filter: brightness(0.7) contrast(1.2); }
+    #phone.low-sanity { animation: sanityDistort 2s infinite alternate; }
+    @keyframes sanityDistort {
+      0% { filter: hue-rotate(0deg) contrast(100%); }
+      50% { filter: hue-rotate(90deg) contrast(150%) brightness(0.8); }
+      100% { filter: hue-rotate(0deg) contrast(120%); }
     }
 
     .shake { animation: phoneShake 0.4s ease-in-out; }
@@ -76,7 +85,7 @@
 
     #image-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85); display: none; justify-content: center;
+      background: rgba(0, 0, 0, 0.9); display: none; justify-content: center;
       align-items: center; z-index: 85; opacity: 0; transition: opacity 0.3s;
     }
     #image-modal img {
@@ -84,7 +93,7 @@
       box-shadow: 0 0 25px rgba(255,0,0,0.5); border: 2px solid #555;
     }
 
-    /* 信件大圖彈出 Modal (宋體字) */
+    /* 宋體絕望便條視窗 */
     #letter-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.92); display: none; justify-content: center;
@@ -109,11 +118,14 @@
     }
 
     #status-bar {
-      height: 25px; background: #1F2C34; color: white; display: flex;
-      justify-content: space-between; padding: 5px 15px 0; align-items: center;
-      font-size: 11px; font-weight: bold; z-index: 20;
+      height: 28px; background: #111B21; color: white; display: flex;
+      justify-content: space-between; padding: 4px 10px 0; align-items: center;
+      font-size: 11px; font-weight: bold; z-index: 20; border-bottom: 1px solid #202C33;
     }
     #death-counter { color: #FF5252; }
+    #battery-display { color: #00A884; }
+    #sanity-display { color: #34B7F1; }
+    #monster-radar { color: #FFD02C; }
     #elevator-status { color: #FFD02C; display: none; }
     
     #wa-header {
@@ -139,8 +151,8 @@
     .chat-bg.hidden { display: none; }
 
     .msg {
-      max-width: 75%; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
-      font-size: 15px; line-height: 1.4; position: relative; word-wrap: break-word; animation: fadeIn 0.3s ease-in-out;
+      max-width: 78%; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
+      font-size: 14.5px; line-height: 1.4; position: relative; word-wrap: break-word; animation: fadeIn 0.3s ease-in-out;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg.received { background: #202C33; color: #E9EDEF; align-self: flex-start; border-top-left-radius: 0; }
@@ -169,14 +181,16 @@
     .msg.system-hack { color: #00A884; font-family: monospace; border: 1px dashed #00A884; }
 
     #typing-indicator { color: #8696A0; font-size: 13px; padding-left: 20px; margin-bottom: 10px; display: none; font-style: italic; }
-    #choices-container { background: #1F2C34; padding: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 10;}
+    #choices-container { background: #1F2C34; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 10;}
     .choice-btn {
-      background: #2A3942; border: 1px solid #8696A0; color: #00A884; padding: 12px;
-      border-radius: 20px; text-align: center; font-size: 15px; cursor: pointer; transition: background 0.2s; font-weight: bold;
+      background: #2A3942; border: 1px solid #8696A0; color: #00A884; padding: 11px;
+      border-radius: 20px; text-align: center; font-size: 14.5px; cursor: pointer; transition: background 0.2s; font-weight: bold;
     }
     .choice-btn:active { background: #384B57; }
     .choice-btn.hack-btn { color: #FF5252; border-color: #FF5252; }
     .choice-btn.action-btn { color: #FFD02C; border-color: #FFD02C; background: #332B00; }
+    .choice-btn.light-btn { color: #00E676; border-color: #00E676; background: #003311; }
+    .choice-btn.dark-btn { color: #B0BEC5; border-color: #78909C; background: #1A2327; }
     
     .input-group { display: flex; gap: 10px; }
     .input-group input {
@@ -188,6 +202,7 @@
 </head>
 <body>
 
+  <!-- 音源 -->
   <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
   <audio id="bgm-butcher" src="bgm02.mp3" loop preload="auto"></audio>
   <audio id="sfx-footsteps" src="soundeffect02.mp3" loop preload="auto"></audio>
@@ -195,6 +210,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -206,7 +222,7 @@
       <img id="modal-img" src="" alt="提示圖片">
     </div>
 
-    <!-- 信件 Modal (已新增 Speed Dating 世界觀設定) -->
+    <!-- 信件 Modal (Speed Dating 世界觀設定) -->
     <div id="letter-modal" onclick="closeLetterModal()">
       <div class="letter-modal-content" onclick="event.stopPropagation()">
         <span class="close-letter-btn" onclick="closeLetterModal()">✖</span>
@@ -223,11 +239,13 @@
 
     <div id="qte-timer-bar"></div>
 
+    <!-- LAST LIGHT 狀態列 -->
     <div id="status-bar">
-      <span id="clock">12:38</span>
-      <span id="elevator-status">🛗 B1層 (下墜中)</span>
+      <span id="battery-display">🔦 100%</span>
+      <span id="sanity-display">🧠 理智: 100%</span>
+      <span id="monster-radar">👁️ 安全</span>
+      <span id="elevator-status">🛗 B1層</span>
       <span id="death-counter">💀 0</span>
-      <span>📵 無訊號 &nbsp; 🔋 22%</span>
     </div>
     
     <div id="wa-header">
@@ -248,21 +266,75 @@
   <script>
     function updateClock() {
       const now = new Date();
-      document.getElementById('clock').innerText = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     }
     setInterval(updateClock, 60000); updateClock();
 
     let playerName = sessionStorage.getItem('playerName') || '';
     let deathCount = parseInt(sessionStorage.getItem('deathCount') || '0', 10);
     if(playerName) document.getElementById('player-name').value = playerName;
-    document.getElementById('death-counter').innerText = `💀 死亡次數: ${deathCount}`;
 
+    // 遊戲狀態與屬性
     let gameState = {
+      battery: 100,
+      sanity: 100,
+      flashlightOn: true,
+      monsterDistance: 0, // 0: 安全, 1: 腳步近了, 2: 鬼影就在眼前
+      elevatorFloor: 1,
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
-      exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false, knownClue1: false,
-      trusted04: false,
-      elevatorFloor: 1
+      exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false,
+      trusted04: false
     };
+
+    function updateStatusUI() {
+      const bEl = document.getElementById('battery-display');
+      const sEl = document.getElementById('sanity-display');
+      const mEl = document.getElementById('monster-radar');
+      const dEl = document.getElementById('death-counter');
+      const eEl = document.getElementById('elevator-status');
+
+      bEl.innerText = `🔦 ${gameState.battery}%`;
+      bEl.style.color = gameState.battery < 20 ? '#FF5252' : '#00A884';
+
+      sEl.innerText = `🧠 理智: ${gameState.sanity}%`;
+      sEl.style.color = gameState.sanity < 40 ? '#FF5252' : '#34B7F1';
+
+      if (gameState.monsterDistance === 0) {
+        mEl.innerText = '👁️ 安全'; mEl.style.color = '#8696A0';
+      } else if (gameState.monsterDistance === 1) {
+        mEl.innerText = '👁️ 腳步近了'; mEl.style.color = '#FFD02C';
+      } else {
+        mEl.innerText = '⚠️ 近在咫尺'; mEl.style.color = '#FF5252';
+      }
+
+      dEl.innerText = `💀 ${deathCount}`;
+
+      const phone = document.getElementById('phone');
+      if (!gameState.flashlightOn) phone.classList.add('dark-mode');
+      else phone.classList.remove('dark-mode');
+
+      if (gameState.sanity < 40) phone.classList.add('low-sanity');
+      else phone.classList.remove('low-sanity');
+    }
+
+    function consumeBattery(amount) {
+      if (gameState.flashlightOn) {
+        gameState.battery = Math.max(0, gameState.battery - amount);
+        if (gameState.battery === 0) gameState.flashlightOn = false;
+      }
+      updateStatusUI();
+    }
+
+    function changeSanity(delta) {
+      gameState.sanity = Math.min(100, Math.max(0, gameState.sanity + delta));
+      updateStatusUI();
+    }
+
+    function updateElevatorUI(floor, statusText) {
+      const el = document.getElementById('elevator-status');
+      el.style.display = 'inline';
+      el.innerText = `🛗 B${floor}層 (${statusText})`;
+    }
 
     function t(text) {
       if(!text) return "";
@@ -291,42 +363,18 @@
       }
     }
 
-    function playSentSfx() {
-      const sfx = new Audio('soundeffect03.mp3');
-      sfx.play().catch(e => {});
-    }
-
-    function playFootsteps() {
-      const steps = document.getElementById('sfx-footsteps');
-      steps.play().catch(e => {});
-    }
-
-    function stopFootsteps() {
-      const steps = document.getElementById('sfx-footsteps');
-      steps.pause(); steps.currentTime = 0;
-    }
-
-    function playChainsaw() {
-      const sfx = document.getElementById('sfx-chainsaw');
-      sfx.play().catch(e => {});
-    }
-
-    function stopChainsaw() {
-      const sfx = document.getElementById('sfx-chainsaw');
-      sfx.pause(); sfx.currentTime = 0;
-    }
-
-    function stopAllSfx() {
-      stopFootsteps(); stopChainsaw();
-    }
+    function playSentSfx() { new Audio('soundeffect03.mp3').play().catch(e => {}); }
+    function playFootsteps() { const s = document.getElementById('sfx-footsteps'); s.play().catch(e => {}); }
+    function stopFootsteps() { const s = document.getElementById('sfx-footsteps'); s.pause(); s.currentTime = 0; }
+    function playChainsaw() { const s = document.getElementById('sfx-chainsaw'); s.play().catch(e => {}); }
+    function stopChainsaw() { const s = document.getElementById('sfx-chainsaw'); s.pause(); s.currentTime = 0; }
+    function stopAllSfx() { stopFootsteps(); stopChainsaw(); }
 
     function popupImage(imgSrc, durationMs = 3000, isJumpscare = false) {
       const modal = document.getElementById('image-modal');
       const img = document.getElementById('modal-img');
       const phone = document.getElementById('phone');
-      
-      img.src = imgSrc;
-      modal.style.display = 'flex';
+      img.src = imgSrc; modal.style.display = 'flex';
       setTimeout(() => modal.style.opacity = '1', 50);
 
       if (isJumpscare) {
@@ -346,18 +394,10 @@
     function triggerGlitchAndVibrate() {
       const phone = document.getElementById('phone');
       const glitch = document.getElementById('glitch-overlay');
-      phone.classList.remove('shake');
-      glitch.classList.remove('active');
+      phone.classList.remove('shake'); glitch.classList.remove('active');
       void phone.offsetWidth;
-      phone.classList.add('shake');
-      glitch.classList.add('active');
+      phone.classList.add('shake'); glitch.classList.add('active');
       if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
-    }
-
-    function updateElevatorUI(floor, statusText) {
-      const el = document.getElementById('elevator-status');
-      el.style.display = 'inline';
-      el.innerText = `🛗 B${floor}層 (${statusText})`;
     }
 
     let qteTimer = null;
@@ -368,32 +408,23 @@
       currentQTEActive = true;
       const phone = document.getElementById('phone');
       const timerBar = document.getElementById('qte-timer-bar');
-      
       phone.classList.add('heavy-shake');
-      timerBar.style.display = 'block';
-      timerBar.style.width = '100%';
-      timerBar.style.transition = 'none';
-      void timerBar.offsetWidth;
-      timerBar.style.transition = 'width 1s linear';
-      timerBar.style.width = '0%';
+      timerBar.style.display = 'block'; timerBar.style.width = '100%';
+      timerBar.style.transition = 'none'; void timerBar.offsetWidth;
+      timerBar.style.transition = 'width 1s linear'; timerBar.style.width = '0%';
 
-      qteTimer = setTimeout(() => {
-        handleQTETimeout();
-      }, 1000);
+      qteTimer = setTimeout(() => { handleQTETimeout(); }, 1000);
     }
 
     function stopQTETimer() {
-      clearTimeout(qteTimer);
-      currentQTEActive = false;
-      const timerBar = document.getElementById('qte-timer-bar');
-      timerBar.style.display = 'none';
+      clearTimeout(qteTimer); currentQTEActive = false;
+      document.getElementById('qte-timer-bar').style.display = 'none';
     }
 
     function handleQTETimeout() {
       stopQTETimer();
       document.getElementById('phone').classList.remove('heavy-shake');
-      playChainsaw();
-      popupImage('image01.jpg', 2500, true);
+      playChainsaw(); popupImage('image01.jpg', 2500, true);
       playNode('chap3_qte_timeout_death');
     }
 
@@ -405,12 +436,8 @@
 
     function switchChatUI(chatId) {
       if (activeChat === chatId && document.getElementById('chat-bg-' + chatId).classList.contains('active')) return;
-      
       triggerGlitchAndVibrate();
-
-      document.querySelectorAll('.chat-bg').forEach(el => {
-        el.classList.remove('active'); el.classList.add('hidden');
-      });
+      document.querySelectorAll('.chat-bg').forEach(el => { el.classList.remove('active'); el.classList.add('hidden'); });
       document.getElementById('chat-bg-' + chatId).classList.remove('hidden');
       document.getElementById('chat-bg-' + chatId).classList.add('active');
       
@@ -422,8 +449,7 @@
       if(chatId === '04') document.getElementById('wa-header').classList.add('alert-mode');
       else document.getElementById('wa-header').classList.remove('alert-mode');
       
-      activeChat = chatId;
-      scrollToBottom();
+      activeChat = chatId; scrollToBottom();
     }
 
     const storyData = {
@@ -485,7 +511,7 @@
       explore_right: {
         chat: 'unknown',
         system: "【系統】：摸到一截已經發黑、戴著純金婚戒的斷指。",
-        action: () => { gameState.exploredRight = true; },
+        action: () => { gameState.exploredRight = true; changeSanity(-15); },
         messages: ["那個戒指原本挺值錢的，可惜弄髒了。繼續找。"],
         choices: [{ text: "（強忍嘔吐感繼續摸索）", nextNode: "explore_hub" }]
       },
@@ -515,7 +541,10 @@
       footsteps_approach: {
         chat: 'unknown',
         system: "【系統】：木箱頂部傳來沉悶重壓感。上方傳來了極其沉重的腳步聲...",
-        action: () => { playFootsteps(); switchBgm('butcher'); },
+        action: () => { 
+          playFootsteps(); switchBgm('butcher'); 
+          gameState.monsterDistance = 2; updateStatusUI();
+        },
         messages: ["他回來檢查土有沒有壓實了。", "停止呼吸。現在。"],
         choices: [
           { text: "（死命憋氣）", nextNode: "breath_1" },
@@ -548,7 +577,10 @@
       },
       breath_success: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); switchBgm('main'); },
+        action: () => { 
+          stopFootsteps(); switchBgm('main'); 
+          gameState.monsterDistance = 0; updateStatusUI();
+        },
         system: "【系統】：腳步聲遠去。{name}終於可以貪婪地吸入空氣。",
         messages: ["他走了。{name}還有最後三十秒。", "用那根鐵釘，拼死撬開正上方那塊木板！"],
         choices: [{ text: "用盡全身力氣撬動木板！", nextNode: "pry_board" }]
@@ -592,7 +624,7 @@
       chap1_mud: {
         chat: 'unknown',
         system: "【系統】：在爛泥中，你摸到了一個密封防水袋！裡面裝著一封字跡扭曲、沾滿血跡的便條...",
-        action: () => { gameState.exploredMud = true; gameState.knownClue1 = true; },
+        action: () => { gameState.exploredMud = true; },
         isLetterMsg: true,
         messages: ["找到了信件？點擊圖片放大閱讀信件內容！"],
         choices: [{ text: "（放大細讀04留下的血書信件）", nextNode: "read_letter_done" }]
@@ -629,7 +661,7 @@
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
         action: () => { popupImage('image02.jpg', 3000); },
-        messages: ["結合信中的線索：信中的所有數字，或許是一個逃出的關鍵。"], // 修改為指定提示語句
+        messages: ["結合信中的線索：信中的所有數字，或許是一個逃出的關鍵。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
       },
@@ -647,7 +679,10 @@
       },
       chap1_door_final: {
         chat: 'unknown',
-        action: () => { playFootsteps(); switchBgm('butcher'); },
+        action: () => { 
+          playFootsteps(); switchBgm('butcher'); 
+          gameState.monsterDistance = 2; updateStatusUI();
+        },
         system: "【系統】：正當舉起手準備刷卡時，手機突然狂震！",
         messages: ["等等！！！", "別刷卡！！！", "馬上找地方躲起來！！！"],
         systemDanger: "【系統】：門外傳來金屬拖行聲與腳步聲，停在鐵門外。",
@@ -664,7 +699,7 @@
       },
       hide_cabinet: {
         chat: 'unknown',
-        action: () => { stopFootsteps(); },
+        action: () => { stopFootsteps(); gameState.monsterDistance = 0; updateStatusUI(); },
         system: "【系統】：{name}鑽進鐵櫃。屠夫扔下一個滴血的黑色塑膠袋後離開。",
         choices: [{ text: "（死死捂住自己的嘴巴）", nextNode: "chap1_end" }]
       },
@@ -686,7 +721,7 @@
         chat: 'unknown',
         messages: [
           "左邊是『廢棄鍋爐房』，右邊是『標本室』。",
-          "左邊的鍋爐房全是漏電電纜。絕對不要靠近。",
+          "左邊的鍋爐房全是漏電電線。絕對不要靠近。",
           "進入右邊標本室，那裡有通往貨運電梯的暗門。"
         ],
         choices: [{ text: "好，我往右邊走...", nextNode: "chap2_interrupt" }]
