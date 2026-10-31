@@ -2,28 +2,30 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LAST LIGHT: WhatsApp Escape v1.5 (Chapter 4 Updated)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LAST LIGHT: WhatsApp Escape v1.5.1 Interface Fix</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      margin: 0; background-color: #000; display: flex;
-      justify-content: center; align-items: center; height: 100vh;
+      margin: 0; padding: 0; background-color: #000; display: flex;
+      justify-content: center; align-items: center; 
+      height: 100vh; height: 100dvh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow: hidden; user-select: none;
+      overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
     }
     
     #start-screen {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: #05080a; color: #fff; display: flex; justify-content: center;
       align-items: center; z-index: 100; flex-direction: column;
-      transition: opacity 1.5s ease;
+      transition: opacity 1.5s ease; padding: 20px;
     }
-    #start-screen h1 { letter-spacing: 6px; color: #00A884; margin-bottom: 5px; font-weight: 300; text-shadow: 0 0 10px rgba(0,168,132,0.5); }
-    #start-screen .subtitle { color: #8696A0; font-size: 13px; margin-bottom: 35px; letter-spacing: 2px; }
+    #start-screen h1 { letter-spacing: 6px; color: #00A884; margin-bottom: 5px; font-weight: 300; text-shadow: 0 0 10px rgba(0,168,132,0.5); text-align: center; }
+    #start-screen .subtitle { color: #8696A0; font-size: 13px; margin-bottom: 35px; letter-spacing: 2px; text-align: center; }
     #player-name {
       background: #1F2C34; border: 1px solid #8696A0; color: #E9EDEF;
       padding: 15px; border-radius: 10px; outline: none; font-size: 16px;
-      text-align: center; width: 250px; margin-bottom: 20px; transition: 0.3s;
+      text-align: center; width: 250px; max-width: 80%; margin-bottom: 20px; transition: 0.3s;
     }
     #player-name:focus { border-color: #00A884; }
     #start-btn {
@@ -35,13 +37,14 @@
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 168, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0); } }
 
     #phone {
-      width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
+      width: 100%; max-width: 420px; 
+      height: 100vh; height: 100dvh; max-height: 880px;
       background: #0B141A; position: relative; display: flex; flex-direction: column;
       box-shadow: 0 0 25px rgba(0,0,0,0.8); opacity: 0; transition: opacity 1.5s ease;
       overflow: hidden;
     }
     @media (min-width: 500px) {
-      #phone { height: 850px; border-radius: 30px; border: 8px solid #222; }
+      #phone { height: 850px; border-radius: 28px; border: 8px solid #222; }
     }
 
     #phone.dark-mode { filter: brightness(0.65) contrast(1.2); }
@@ -86,9 +89,9 @@
     /* 下拉控制中心 */
     #control-center {
       position: absolute; top: -180px; left: 0; width: 100%; height: 180px;
-      background: rgba(15, 23, 30, 0.95); backdrop-filter: blur(10px);
+      background: rgba(15, 23, 30, 0.96); backdrop-filter: blur(10px);
       z-index: 80; border-bottom: 2px solid #00A884; transition: top 0.3s ease;
-      display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; color: white;
+      display: flex; flex-direction: column; padding: 15px; color: white;
     }
     #control-center.open { top: 28px; }
     .control-row { display: flex; justify-content: space-around; margin-top: 10px; }
@@ -99,13 +102,14 @@
     .control-btn.active { background: #00A884; color: #0B141A; font-weight: bold; }
     #scan-result { font-size: 12px; color: #FFD02C; text-align: center; margin-top: 10px; height: 20px; }
 
+    /* 圖片全螢幕檢視 Modal */
     #image-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.9); display: none; justify-content: center;
+      background: rgba(0, 0, 0, 0.92); display: none; justify-content: center;
       align-items: center; z-index: 85; opacity: 0; transition: opacity 0.3s;
     }
     #image-modal img {
-      max-width: 85%; max-height: 60%; border-radius: 12px;
+      max-width: 88%; max-height: 65%; border-radius: 12px;
       box-shadow: 0 0 25px rgba(255,0,0,0.5); border: 2px solid #555;
     }
 
@@ -132,7 +136,7 @@
     #profile-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: #0B141A; display: none; flex-direction: column; z-index: 85; color: white;
-      padding: 20px; box-sizing: border-box; overflow-y: auto;
+      padding: 20px; overflow-y: auto;
     }
     .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: #1F2C34; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 20px auto 10px; border: 2px solid #00A884; }
     .profile-name { text-align: center; font-size: 20px; font-weight: bold; }
@@ -141,13 +145,14 @@
     .profile-section h4 { margin: 0 0 8px 0; color: #00A884; font-size: 13px; }
 
     #qte-timer-bar {
-      height: 6px; background: #FF5252; width: 100%; display: none;
+      height: 5px; background: #FF5252; width: 100%; display: none;
       box-shadow: 0 0 10px #FF5252; z-index: 30;
     }
 
+    /* 頂部狀態列 */
     #status-bar {
       height: 28px; background: #111B21; color: white; display: flex;
-      justify-content: space-between; padding: 4px 10px 0; align-items: center;
+      justify-content: space-between; padding: 4px 12px 0; align-items: center;
       font-size: 11px; font-weight: bold; z-index: 81; border-bottom: 1px solid #202C33; cursor: pointer;
     }
     #death-counter { color: #FF5252; }
@@ -156,39 +161,60 @@
     #monster-radar { color: #FFD02C; }
     #elevator-status { color: #FFD02C; display: none; }
     
+    /* 真實 WhatsApp 頁首列 */
     #wa-header {
-      background: #1F2C34; color: #E9EDEF; padding: 10px 15px; display: flex;
-      align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 10;
-      cursor: pointer;
+      background: #1F2C34; color: #E9EDEF; padding: 8px 12px; display: flex;
+      align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 10;
+      cursor: pointer; min-height: 54px;
     }
-    #wa-header.alert-mode { background: #5c1818; }
+    #wa-header.alert-mode { background: #4a1515; }
+    .wa-header-left { display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden; }
+    .wa-back-btn { font-size: 20px; color: #00A884; margin-right: 2px; font-weight: bold; }
     #wa-header .avatar {
-      width: 40px; height: 40px; border-radius: 50%; background: #DFE5E7;
-      display: flex; justify-content: center; align-items: center; color: #1F2C34; font-size: 20px; margin-right: 12px;
+      width: 38px; height: 38px; border-radius: 50%; background: #DFE5E7; flex-shrink: 0;
+      display: flex; justify-content: center; align-items: center; color: #1F2C34; font-size: 18px; margin-right: 8px;
     }
-    #wa-header .info { display: flex; flex-direction: column; }
-    #wa-header .name { font-weight: 600; font-size: 16px; }
-    #wa-header .status { font-size: 13px; color: #8696A0; }
+    #wa-header .info { display: flex; flex-direction: column; overflow: hidden; }
+    #wa-header .name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #wa-header .status { font-size: 12px; color: #8696A0; white-space: nowrap; }
+    .wa-header-icons { display: flex; gap: 16px; color: #8696A0; font-size: 16px; padding-left: 8px; flex-shrink: 0; }
 
     .app-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
     .app-view.active { display: flex; }
 
-    /* App 1: WhatsApp 聊天 */
+    /* App 1: WhatsApp 聊天頁面 */
     .chat-bg {
       background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-      background-color: #0B141A; background-blend-mode: overlay; padding: 15px; overflow-y: auto; flex-direction: column; flex: 1;
+      background-color: #0B141A; background-blend-mode: overlay; padding: 12px 14px; overflow-y: auto; flex-direction: column; flex: 1;
     }
-    .msg {
-      max-width: 78%; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
-      font-size: 14.5px; line-height: 1.4; position: relative; word-wrap: break-word; animation: fadeIn 0.3s ease-in-out;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .msg.received { background: #202C33; color: #E9EDEF; align-self: flex-start; border-top-left-radius: 0; }
-    .msg.sent { background: #005C4B; color: #E9EDEF; align-self: flex-end; border-top-right-radius: 0; }
     
+    /* 真實 WhatsApp 訊息氣泡與時間戳 */
+    .msg {
+      max-width: 80%; padding: 7px 10px; border-radius: 8px; margin-bottom: 8px;
+      font-size: 14.5px; line-height: 1.45; position: relative; word-wrap: break-word; 
+      animation: fadeIn 0.25s ease-in-out; display: flex; flex-direction: column;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .msg.received {
+      background: #202C33; color: #E9EDEF; align-self: flex-start;
+      border-top-left-radius: 0; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .msg.sent {
+      background: #005C4B; color: #E9EDEF; align-self: flex-end;
+      border-top-right-radius: 0;
+    }
+    
+    .msg-text { margin-bottom: 2px; }
+    .msg-meta {
+      display: flex; align-items: center; justify-content: flex-end; gap: 3px;
+      font-size: 10px; color: rgba(241, 241, 241, 0.6); margin-top: 1px; float: right; align-self: flex-end;
+    }
+    .msg-ticks { color: #53bdeb; font-weight: bold; font-size: 11px; }
+
     .msg-image-bubble {
-      background: #202C33; padding: 6px; border-radius: 8px; max-width: 75%;
-      align-self: flex-start; margin-bottom: 10px; cursor: pointer; border: 1px solid #3b4a54;
+      background: #202C33; padding: 6px; border-radius: 8px; max-width: 78%;
+      align-self: flex-start; margin-bottom: 8px; cursor: pointer; border: 1px solid #3b4a54;
     }
     .msg-image-thumb {
       background: #f2e9d2; color: #21160c; font-family: "Songti TC", "SimSun", serif;
@@ -202,27 +228,40 @@
     }
 
     .msg.system {
-      background: rgba(31, 44, 52, 0.9); color: #8696A0; align-self: center; font-size: 13px;
-      text-align: left; border-radius: 10px; max-width: 90%; padding: 10px; margin-top: 10px; margin-bottom: 15px;
+      background: rgba(31, 44, 52, 0.92); color: #8696A0; align-self: center; font-size: 12.5px;
+      text-align: left; border-radius: 8px; max-width: 92%; padding: 8px 12px; margin-top: 8px; margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
     .msg.system-danger { color: #FF5252; font-weight: bold; text-align: center; border: 1px solid #FF5252; }
     .msg.system-hack { color: #00A884; font-family: monospace; border: 1px dashed #00A884; }
 
-    #typing-indicator { color: #8696A0; font-size: 13px; padding-left: 20px; margin-bottom: 10px; display: none; font-style: italic; }
+    #typing-indicator { color: #8696A0; font-size: 12.5px; padding-left: 15px; margin-bottom: 8px; display: none; font-style: italic; }
     
-    #choices-container { background: #1F2C34; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 10;}
+    #choices-container { background: #1F2C34; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; z-index: 10;}
     .choice-btn {
-      background: #2A3942; border: 1px solid #8696A0; color: #00A884; padding: 11px;
-      border-radius: 20px; text-align: center; font-size: 14.5px; cursor: pointer; transition: background 0.2s; font-weight: bold;
+      background: #2A3942; border: 1px solid #3b4a54; color: #00A884; padding: 11px 14px;
+      border-radius: 20px; text-align: center; font-size: 14px; cursor: pointer; transition: background 0.2s; font-weight: 500;
     }
     .choice-btn:active { background: #384B57; }
     .choice-btn.hack-btn { color: #FF5252; border-color: #FF5252; }
     .choice-btn.action-btn { color: #FFD02C; border-color: #FFD02C; background: #332B00; }
 
-    /* 主動自由打字區域 */
-    #free-input-container { background: #1F2C34; padding: 10px; display: none; gap: 8px; }
-    #free-input-container input { flex: 1; background: #2A3942; border: 1px solid #8696A0; color: white; padding: 10px 15px; border-radius: 20px; outline: none; }
-    #free-input-container button { background: #00A884; border: none; color: #0B141A; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    /* 真實 WhatsApp 打字列與切換鈕 */
+    #free-input-container {
+      background: #1F2C34; padding: 8px 10px; display: none; align-items: center; gap: 8px;
+    }
+    .wa-input-pill {
+      flex: 1; background: #2A3942; border-radius: 24px; display: flex; align-items: center; padding: 4px 12px; gap: 8px;
+    }
+    .wa-input-pill input {
+      flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 14.5px; padding: 6px 0;
+    }
+    .wa-input-pill .icon { color: #8696A0; font-size: 18px; cursor: pointer; }
+    .wa-send-btn {
+      width: 40px; height: 40px; background: #00A884; border-radius: 50%; border: none;
+      color: #0B141A; display: flex; justify-content: center; align-items: center;
+      font-size: 16px; cursor: pointer; flex-shrink: 0; font-weight: bold;
+    }
 
     /* App 2: 物品 / 相簿庫 */
     #app-gallery { padding: 15px; color: white; overflow-y: auto; background: #0B141A; }
@@ -239,19 +278,19 @@
 
     /* 底部 App 導航列 */
     #bottom-nav {
-      height: 55px; background: #111B21; border-top: 1px solid #202C33; display: flex;
-      justify-content: space-around; align-items: center; z-index: 20;
+      height: 54px; background: #111B21; border-top: 1px solid #202C33; display: flex;
+      justify-content: space-around; align-items: center; z-index: 20; flex-shrink: 0;
     }
-    .nav-item { color: #8696A0; display: flex; flex-direction: column; align-items: center; font-size: 11px; cursor: pointer; flex: 1; }
+    .nav-item { color: #8696A0; display: flex; flex-direction: column; align-items: center; font-size: 10.5px; cursor: pointer; flex: 1; }
     .nav-item.active { color: #00A884; font-weight: bold; }
-    .nav-icon { font-size: 20px; margin-bottom: 2px; }
+    .nav-icon { font-size: 19px; margin-bottom: 2px; }
 
-    .input-group { display: flex; gap: 10px; }
+    .input-group { display: flex; gap: 8px; }
     .input-group input {
       flex: 1; background: #2A3942; border: 1px solid #8696A0; color: #E9EDEF;
-      padding: 12px; border-radius: 20px; outline: none; font-size: 15px; text-align: center;
+      padding: 11px; border-radius: 20px; outline: none; font-size: 14.5px; text-align: center;
     }
-    .input-group button { background: #00A884; color: #0B141A; border: none; padding: 12px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    .input-group button { background: #00A884; color: #0B141A; border: none; padding: 11px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -263,7 +302,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
-    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5</div>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5.1</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -281,7 +320,7 @@
       <div id="scan-result">離線狀態 - 無無線網路</div>
     </div>
 
-    <!-- 圖片 Modal -->
+    <!-- 全螢幕圖片 Modal -->
     <div id="image-modal">
       <img id="modal-img" src="" alt="提示圖片">
     </div>
@@ -328,12 +367,20 @@
       <span id="death-counter">💀 0</span>
     </div>
 
-    <!-- WhatsApp 頁首 -->
+    <!-- 真實 WhatsApp 頁首 -->
     <div id="wa-header" onclick="openProfileModal()">
-      <div class="avatar" id="header-avatar">?</div>
-      <div class="info">
-        <span class="name" id="header-name">未知號碼</span>
-        <span class="status" id="online-status">在線上</span>
+      <div class="wa-header-left">
+        <span class="wa-back-btn">‹</span>
+        <div class="avatar" id="header-avatar">?</div>
+        <div class="info">
+          <span class="name" id="header-name">未知號碼</span>
+          <span class="status" id="online-status">在線上</span>
+        </div>
+      </div>
+      <div class="wa-header-icons">
+        <span>📹</span>
+        <span>📞</span>
+        <span>⋮</span>
       </div>
     </div>
 
@@ -345,12 +392,17 @@
       
       <div id="choices-container"></div>
 
+      <!-- 真實 WhatsApp 主動打字區 -->
       <div id="free-input-container">
-        <input type="text" id="custom-msg-input" placeholder="主動輸入訊息 (如: 04, 密碼, 救我)...">
-        <button onclick="sendCustomMessage()">發送</button>
+        <div class="wa-input-pill">
+          <span class="icon">😊</span>
+          <input type="text" id="custom-msg-input" placeholder="輸入訊息...">
+          <span class="icon">📎</span>
+        </div>
+        <button class="wa-send-btn" onclick="sendCustomMessage()">➢</button>
       </div>
-      <div style="background:#1F2C34; text-align:right; padding: 2px 10px;">
-        <span style="font-size:11px; color:#00A884; cursor:pointer;" onclick="toggleFreeInput()">⌨️ 切換主動打字/預設選項</span>
+      <div style="background:#1F2C34; text-align:right; padding: 3px 12px; border-top:1px solid #111B21;">
+        <span style="font-size:11px; color:#00A884; cursor:pointer;" onclick="toggleFreeInput()">⌨️ 切換主動打字 / 預設選項</span>
       </div>
     </div>
 
@@ -403,6 +455,15 @@
       unlockedGallery: [], 
       unlockedVoice: []    
     };
+
+    function getCurrentTimeString() {
+      const d = new Date();
+      let h = d.getHours();
+      let m = d.getMinutes();
+      h = h < 10 ? '0' + h : h;
+      m = m < 10 ? '0' + m : m;
+      return `${h}:${m}`;
+    }
 
     function renderGallery() {
       const container = document.getElementById('gallery-container');
@@ -717,7 +778,7 @@
       const activeBg = document.getElementById('chat-bg-' + activeChat);
       const div = document.createElement('div');
       div.className = 'msg received';
-      div.innerText = reply;
+      div.innerHTML = `<div class="msg-text">${t(reply)}</div><div class="msg-meta"><span>${getCurrentTimeString()}</span></div>`;
       activeBg.appendChild(div);
       scrollToBottom();
     }
@@ -1299,7 +1360,7 @@
         chat: 'unknown',
         system: "【系統】：天花板上方傳來慘叫。在剛剛劇烈的煞車中，位於頂部的屠夫被巨大的慣性甩飛，跌落進了無底的電梯井深處。",
         messages: [
-          "他摔下去了。從那個高度摔下去絕不可能活命。",
+          "他摔下下去。從那個高度摔下去絕不可能活命。",
           "現在，用你身上的磁卡撬開變形的電梯門。",
           "歡迎來到『地下百米實驗室』。這裡才是所有秘密的源頭..."
         ],
@@ -1569,7 +1630,7 @@
 
           const div = document.createElement('div');
           div.className = 'msg received';
-          div.innerText = t(msg);
+          div.innerHTML = `<div class="msg-text">${t(msg)}</div><div class="msg-meta"><span>${getCurrentTimeString()}</span></div>`;
           activeBg.appendChild(div);
           scrollToBottom();
           await sleep(500);
@@ -1627,7 +1688,7 @@
       const activeBg = document.getElementById('chat-bg-' + activeChat);
       const div = document.createElement('div');
       div.className = 'msg sent';
-      div.innerText = t(text);
+      div.innerHTML = `<div class="msg-text">${t(text)}</div><div class="msg-meta"><span>${getCurrentTimeString()}</span> <span class="msg-ticks">✓✓</span></div>`;
       activeBg.appendChild(div);
       scrollToBottom();
       await sleep(800);
