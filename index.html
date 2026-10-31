@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LAST LIGHT: WhatsApp Escape v1.5.1 Interface Fix</title>
+  <title>LAST LIGHT: WhatsApp Escape v1.5.2 Alignment Fix</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -102,7 +102,7 @@
     .control-btn.active { background: #00A884; color: #0B141A; font-weight: bold; }
     #scan-result { font-size: 12px; color: #FFD02C; text-align: center; margin-top: 10px; height: 20px; }
 
-    /* 圖片全螢幕檢視 Modal */
+    /* 全螢幕圖片 Modal */
     #image-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.92); display: none; justify-content: center;
@@ -182,13 +182,15 @@
     .app-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
     .app-view.active { display: flex; }
 
-    /* App 1: WhatsApp 聊天頁面 */
+    /* App 1: WhatsApp 聊天頁面 (確保為 Flex Column 容器) */
     .chat-bg {
       background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-      background-color: #0B141A; background-blend-mode: overlay; padding: 12px 14px; overflow-y: auto; flex-direction: column; flex: 1;
+      background-color: #0B141A; background-blend-mode: overlay; padding: 12px 14px; overflow-y: auto; 
+      display: flex; flex-direction: column; flex: 1;
     }
+    .chat-bg.hidden { display: none !important; }
     
-    /* 真實 WhatsApp 訊息氣泡與時間戳 */
+    /* 對話氣泡靠左/靠右對齊修正 */
     .msg {
       max-width: 80%; padding: 7px 10px; border-radius: 8px; margin-bottom: 8px;
       font-size: 14.5px; line-height: 1.45; position: relative; word-wrap: break-word; 
@@ -196,12 +198,17 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     
+    /* NPC 訊息：固定靠左 */
     .msg.received {
-      background: #202C33; color: #E9EDEF; align-self: flex-start;
+      background: #202C33; color: #E9EDEF; 
+      align-self: flex-start; margin-right: auto; margin-left: 0;
       border-top-left-radius: 0; border: 1px solid rgba(255,255,255,0.05);
     }
+    
+    /* 玩家訊息：固定靠右 */
     .msg.sent {
-      background: #005C4B; color: #E9EDEF; align-self: flex-end;
+      background: #005C4B; color: #E9EDEF; 
+      align-self: flex-end; margin-left: auto; margin-right: 0;
       border-top-right-radius: 0;
     }
     
@@ -214,7 +221,7 @@
 
     .msg-image-bubble {
       background: #202C33; padding: 6px; border-radius: 8px; max-width: 78%;
-      align-self: flex-start; margin-bottom: 8px; cursor: pointer; border: 1px solid #3b4a54;
+      align-self: flex-start; margin-right: auto; margin-left: 0; margin-bottom: 8px; cursor: pointer; border: 1px solid #3b4a54;
     }
     .msg-image-thumb {
       background: #f2e9d2; color: #21160c; font-family: "Songti TC", "SimSun", serif;
@@ -227,9 +234,11 @@
       font-size: 11px; padding: 4px 0; font-family: sans-serif; font-weight: bold;
     }
 
+    /* 系統訊息：固定居中 */
     .msg.system {
-      background: rgba(31, 44, 52, 0.92); color: #8696A0; align-self: center; font-size: 12.5px;
-      text-align: left; border-radius: 8px; max-width: 92%; padding: 8px 12px; margin-top: 8px; margin-bottom: 12px;
+      background: rgba(31, 44, 52, 0.92); color: #8696A0; 
+      align-self: center; margin-left: auto; margin-right: auto;
+      font-size: 12.5px; text-align: left; border-radius: 8px; max-width: 92%; padding: 8px 12px; margin-top: 8px; margin-bottom: 12px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
     .msg.system-danger { color: #FF5252; font-weight: bold; text-align: center; border: 1px solid #FF5252; }
@@ -302,7 +311,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
-    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5.1</div>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5.2</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -1360,7 +1369,7 @@
         chat: 'unknown',
         system: "【系統】：天花板上方傳來慘叫。在剛剛劇烈的煞車中，位於頂部的屠夫被巨大的慣性甩飛，跌落進了無底的電梯井深處。",
         messages: [
-          "他摔下下去。從那個高度摔下去絕不可能活命。",
+          "他摔下去了。從那個高度摔下去絕不可能活命。",
           "現在，用你身上的磁卡撬開變形的電梯門。",
           "歡迎來到『地下百米實驗室』。這裡才是所有秘密的源頭..."
         ],
