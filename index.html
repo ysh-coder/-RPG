@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LAST LIGHT: WhatsApp Escape v1.4 Control Update</title>
+  <title>LAST LIGHT: WhatsApp Escape v1.4.1 Fix</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -83,7 +83,7 @@
       100% { opacity: 0; }
     }
 
-    /* 頂部下拉控制中心 */
+    /* 下拉控制中心 */
     #control-center {
       position: absolute; top: -180px; left: 0; width: 100%; height: 180px;
       background: rgba(15, 23, 30, 0.95); backdrop-filter: blur(10px);
@@ -170,7 +170,6 @@
     #wa-header .name { font-weight: 600; font-size: 16px; }
     #wa-header .status { font-size: 13px; color: #8696A0; }
 
-    /* 多 App 視窗切換 */
     .app-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
     .app-view.active { display: flex; }
 
@@ -225,21 +224,22 @@
     #free-input-container input { flex: 1; background: #2A3942; border: 1px solid #8696A0; color: white; padding: 10px 15px; border-radius: 20px; outline: none; }
     #free-input-container button { background: #00A884; border: none; color: #0B141A; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-    /* App: 相簿 / 線索庫 */
+    /* App: 相簿 / 線索庫 (動態生成) */
     #app-gallery { padding: 15px; color: white; overflow-y: auto; background: #0B141A; }
     .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
     .gallery-item { background: #1F2C34; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; border: 1px solid #33444f; }
-    .gallery-item img { max-width: 100%; border-radius: 6px; }
 
-    /* App: 語音備忘錄 */
+    /* App: 語音備忘錄 (動態生成) */
     #app-voice { padding: 15px; color: white; overflow-y: auto; background: #0B141A; }
     .voice-card { background: #1F2C34; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .voice-play-btn { background: #00A884; color: #0B141A; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-    /* App: 筆記本 */
+    /* App: 筆記本 (動態生成) */
     #app-notes { padding: 15px; color: white; overflow-y: auto; background: #0B141A; flex: 1; display: flex; flex-direction: column; }
-    .note-log { background: #111B21; padding: 12px; border-radius: 8px; color: #00A884; font-family: monospace; font-size: 13px; margin-bottom: 12px; }
+    .note-log { background: #111B21; padding: 12px; border-radius: 8px; color: #00A884; font-family: monospace; font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
     #user-textarea { flex: 1; background: #1F2C34; border: 1px solid #33444f; color: white; padding: 12px; border-radius: 8px; outline: none; resize: none; font-size: 14px; }
+
+    .empty-state { text-align: center; color: #8696A0; font-size: 13px; margin-top: 40px; }
 
     /* 底部 App 導航列 */
     #bottom-nav {
@@ -267,7 +267,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
-    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.4</div>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.4.1</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -316,8 +316,8 @@
         <div style="font-size:12px; color:#8696A0;">端到端加密通訊，無法存取對方的真實 IP 地址。</div>
       </div>
       <div class="profile-section">
-        <h4>🖼️ 共享多媒體媒體庫</h4>
-        <div style="font-size:12px; color:#8696A0;">已搜集 04 的血書便條與密碼提示圖。</div>
+        <h4>🖼️ 共享多媒體庫</h4>
+        <div style="font-size:12px; color:#8696A0;" id="media-count-text">目前已搜集 0 個線索檔案。</div>
       </div>
     </div>
 
@@ -360,46 +360,24 @@
       </div>
     </div>
 
-    <!-- App 2: 相簿 / 線索庫 -->
+    <!-- App 2: 相簿 / 線索庫 (動態解鎖) -->
     <div id="app-gallery" class="app-view">
       <h3>🖼️ 線索相簿</h3>
-      <div style="font-size:12px; color:#8696A0;">這裡點擊可隨時重新檢視遊戲中發現的圖片與便條：</div>
-      <div class="gallery-grid">
-        <div class="gallery-item" onclick="openLetterModal()">
-          <div style="font-size:30px;">📜</div>
-          <div style="font-size:12px; margin-top:5px;">04 的血書便條</div>
-        </div>
-        <div class="gallery-item" onclick="popupImage('image02.jpg', 3000)">
-          <div style="font-size:30px;">🔒</div>
-          <div style="font-size:12px; margin-top:5px;">鐵櫃四位數密碼鎖</div>
-        </div>
-      </div>
+      <div style="font-size:12px; color:#8696A0;">探索獲得的相片與便條將自動收錄於此：</div>
+      <div id="gallery-container" class="gallery-grid"></div>
     </div>
 
-    <!-- App 3: 語音備忘錄 -->
+    <!-- App 3: 語音備忘錄 (動態解鎖) -->
     <div id="app-voice" class="app-view">
       <h3>🎙️ 語音備忘錄</h3>
-      <div style="font-size:12px; color:#8696A0; margin-bottom:15px;">收聽收到的恐怖語音片段：</div>
-      <div class="voice-card">
-        <div>
-          <div style="font-weight:bold;">語音訊息 0:04</div>
-          <div style="font-size:11px; color:#8696A0;">包含慘叫聲與地下回音</div>
-        </div>
-        <button class="voice-play-btn" onclick="playVoiceMemo()">▶ 播放</button>
-      </div>
+      <div style="font-size:12px; color:#8696A0; margin-bottom:15px;">收聽收到的語音片段：</div>
+      <div id="voice-container"></div>
     </div>
 
-    <!-- App 4: 筆記本 -->
+    <!-- App 4: 筆記本 (動態解鎖) -->
     <div id="app-notes" class="app-view">
       <h3>📝 線索筆記本</h3>
-      <div class="note-log">
-        [自動記錄關鍵線索]：<br>
-        - 04 的代號：04<br>
-        - 配對號碼：27<br>
-        - 囚禁天數：3天<br>
-        - 解鎖算式提示：04 + (27 - 3)<br>
-        - 密碼真相：0424
-      </div>
+      <div id="note-log-container" class="note-log"></div>
       <div style="font-size:12px; color:#8696A0; margin-bottom:5px;">玩家自由隨手筆記區：</div>
       <textarea id="user-textarea" placeholder="在這裡記下你自己推理的線索..."></textarea>
     </div>
@@ -431,6 +409,7 @@
     let deathCount = parseInt(sessionStorage.getItem('deathCount') || '0', 10);
     if(playerName) document.getElementById('player-name').value = playerName;
 
+    // 核心狀態與道具解鎖控制
     let gameState = {
       battery: 100,
       sanity: 100,
@@ -439,15 +418,83 @@
       elevatorFloor: 1,
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
       exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false,
-      trusted04: false
+      trusted04: false,
+      // 動態解鎖清單 (解決初始通關 Bug)
+      unlockedGallery: [], // 格式: { id, title, icon, actionFn }
+      unlockedVoice: [],   // 格式: { id, title, subtext, soundSrc }
+      unlockedNotes: ["【初始狀態】甦醒於漆黑泥暗室，記憶模糊。"]
     };
+
+    // --- 動態渲染 App 介面 ---
+    function renderGallery() {
+      const container = document.getElementById('gallery-container');
+      container.innerHTML = '';
+      if (gameState.unlockedGallery.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="grid-column: span 2;">（目前尚未獲得任何線索相片）</div>`;
+        return;
+      }
+      gameState.unlockedGallery.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+        div.onclick = item.actionFn;
+        div.innerHTML = `<div style="font-size:30px;">${item.icon}</div><div style="font-size:12px; margin-top:5px;">${item.title}</div>`;
+        container.appendChild(div);
+      });
+    }
+
+    function renderVoice() {
+      const container = document.getElementById('voice-container');
+      container.innerHTML = '';
+      if (gameState.unlockedVoice.length === 0) {
+        container.innerHTML = `<div class="empty-state">（目前尚無已儲存的語音備忘錄）</div>`;
+        return;
+      }
+      gameState.unlockedVoice.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'voice-card';
+        div.innerHTML = `
+          <div>
+            <div style="font-weight:bold;">${item.title}</div>
+            <div style="font-size:11px; color:#8696A0;">${item.subtext}</div>
+          </div>
+          <button class="voice-play-btn" onclick="playVoiceMemo('${item.soundSrc}')">▶ 播放</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderNotes() {
+      const container = document.getElementById('note-log-container');
+      container.innerHTML = `<strong>[系統自動記錄線索]：</strong><br>` + gameState.unlockedNotes.map(n => `- ${n}`).join('<br>');
+    }
+
+    // 線索與道具解鎖函數
+    function unlockGalleryItem(id, title, icon, actionFn) {
+      if (!gameState.unlockedGallery.some(i => i.id === id)) {
+        gameState.unlockedGallery.push({ id, title, icon, actionFn });
+        renderGallery();
+      }
+    }
+
+    function unlockVoiceMemo(id, title, subtext, soundSrc) {
+      if (!gameState.unlockedVoice.some(i => i.id === id)) {
+        gameState.unlockedVoice.push({ id, title, subtext, soundSrc });
+        renderVoice();
+      }
+    }
+
+    function addNoteClue(clueText) {
+      if (!gameState.unlockedNotes.includes(clueText)) {
+        gameState.unlockedNotes.push(clueText);
+        renderNotes();
+      }
+    }
 
     // 控制中心開關
     function toggleControlCenter() {
       document.getElementById('control-center').classList.toggle('open');
     }
 
-    // 手電筒開關邏輯
     function toggleFlashlight() {
       gameState.flashlightOn = !gameState.flashlightOn;
       const btn = document.getElementById('flashlight-toggle-btn');
@@ -459,31 +506,34 @@
       updateStatusUI();
     }
 
-    // 訊號掃描
     function scanSignal() {
       const res = document.getElementById('scan-result');
       res.innerText = '📡 正在掃描周圍 2.4GHz 頻段...';
       setTimeout(() => {
         if (gameState.hasKeycard) {
           res.innerText = '發現感應訊號：鐵門磁卡機 [已配對]';
+        } else if (gameState.cabinetOpen) {
+          res.innerText = '發現設備訊號：鐵櫃 [解鎖完成]';
         } else {
-          res.innerText = '發現加密訊號：鐵櫃電子鎖 (需要 4 位數字)';
+          res.innerText = '發現加密訊號：生鏽鐵櫃密碼鎖';
         }
       }, 1000);
     }
 
-    // App 切換
     function switchApp(appName) {
       document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       
       document.getElementById('app-' + appName).classList.add('active');
       
+      if (appName === 'gallery') renderGallery();
+      if (appName === 'voice') renderVoice();
+      if (appName === 'notes') renderNotes();
+
       const navIdx = {'whatsapp':0, 'gallery':1, 'voice':2, 'notes':3}[appName];
       document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
     }
 
-    // Profile Modal
     function openProfileModal() {
       const modal = document.getElementById('profile-modal');
       modal.style.display = 'flex';
@@ -491,6 +541,9 @@
       document.getElementById('prof-name').innerText = headerObj.name;
       document.getElementById('prof-avatar').innerText = headerObj.avatar;
       document.getElementById('prof-bio').innerText = activeChat === '04' ? '警告：不要相信指引你的光' : '在線上 - Speed Dating 配對者';
+      
+      const totalUnlocked = gameState.unlockedGallery.length + gameState.unlockedVoice.length;
+      document.getElementById('media-count-text').innerText = `目前已搜集 ${totalUnlocked} 個線索檔案。`;
     }
     function closeProfileModal() {
       document.getElementById('profile-modal').style.display = 'none';
@@ -531,7 +584,7 @@
         gameState.battery = Math.max(0, gameState.battery - amount);
         if (gameState.battery === 0) gameState.flashlightOn = false;
       } else {
-        changeSanity(-5); // 關燈探索扣理智
+        changeSanity(-5);
       }
       updateStatusUI();
     }
@@ -581,8 +634,8 @@
     function stopChainsaw() { const s = document.getElementById('sfx-chainsaw'); s.pause(); s.currentTime = 0; }
     function stopAllSfx() { stopFootsteps(); stopChainsaw(); }
 
-    function playVoiceMemo() {
-      const sfx = new Audio('soundeffect01.mp3');
+    function playVoiceMemo(srcPath = 'soundeffect01.mp3') {
+      const sfx = new Audio(srcPath);
       sfx.play().catch(e => {});
     }
 
@@ -668,7 +721,6 @@
       activeChat = chatId; scrollToBottom();
     }
 
-    // 主動打字切換
     function toggleFreeInput() {
       const choices = document.getElementById('choices-container');
       const input = document.getElementById('free-input-container');
@@ -679,7 +731,6 @@
       }
     }
 
-    // 發送自由打字訊息
     async function sendCustomMessage() {
       const inputField = document.getElementById('custom-msg-input');
       const val = inputField.value.trim();
@@ -715,6 +766,9 @@
       start: {
         chat: 'unknown',
         system: "【序章：窒息之匣】\n一陣劇烈的暈眩後，{name}從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。",
+        action: () => {
+          renderGallery(); renderVoice(); renderNotes();
+        },
         messages: ["{name}醒了。", "{name}的心跳聲大到連我在上面都聽得見。"],
         choices: [
           { text: "我是誰？！救命啊！！！", nextNode: "panic_shout" },
@@ -726,6 +780,8 @@
         chat: 'unknown',
         action: () => {
           setTimeout(() => { playVoiceMemo(); }, 3500); 
+          // 解鎖語音 App 檔案 1
+          unlockVoiceMemo('voice_screaming', '語音訊息 0:04', '包含慘叫聲與地下回音', 'soundeffect01.mp3');
         },
         messages: ["🔊 [語音訊息 0:04]"],
         system: "【系統】：語音訊息中傳來慘叫聲與沉悶的回音。",
@@ -759,7 +815,11 @@
         chat: 'unknown',
         system: "【系統】：{name}摸到粗糙的木頭紋理。發現是有人用指甲刻出來的字...",
         systemDanger: "「不要相信手機裡的人」",
-        action: () => { gameState.exploredLeft = true; consumeBattery(10); },
+        action: () => { 
+          gameState.exploredLeft = true; 
+          consumeBattery(10); 
+          addNoteClue('木板血字「不要相信手機裡的人」');
+        },
         messages: ["摸到了什麼嗎？"],
         choices: [{ text: "沒...沒有。", nextNode: "explore_hub" }]
       },
@@ -860,6 +920,9 @@
         chat: 'unknown',
         messages: ["還記得在派對上的『配對號碼』嗎？胸前貼著幾號？"],
         system: "【系統】：大腦想起胸前的貼紙寫著數字『27』。",
+        action: () => {
+          addNoteClue('【個人線索】胸前貼紙號碼：27');
+        },
         messagesAfter: ["想起來了嗎？這很重要。現在，仔細搜查周圍。"],
         choices: [{ text: "好，我看看四周。", nextNode: "chap1_hub" }]
       },
@@ -879,7 +942,13 @@
       chap1_mud: {
         chat: 'unknown',
         system: "【系統】：在爛泥中，你摸到了一個密封防水袋！裡面裝著一封字跡扭曲、沾滿血跡的便條...",
-        action: () => { gameState.exploredMud = true; },
+        action: () => { 
+          gameState.exploredMud = true; 
+          // 首次發現泥坑便條：解鎖相簿與筆記本
+          unlockGalleryItem('letter_04', '04 的血書便條', '📜', openLetterModal);
+          addNoteClue('【04號便條】囚禁天數：3天3夜');
+          addNoteClue('【04號便條】算式提示：代號與配對號碼相扣減');
+        },
         isLetterMsg: true,
         messages: ["找到了信件？點擊圖片放大閱讀信件內容！"],
         choices: [{ text: "（放大細讀04留下的血書信件）", nextNode: "read_letter_done" }]
@@ -915,7 +984,12 @@
       chap1_cabinet: {
         chat: 'unknown',
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
-        action: () => { popupImage('image02.jpg', 3000); },
+        action: () => { 
+          popupImage('image02.jpg', 3000); 
+          // 檢查鐵櫃：解鎖密碼鎖照片
+          unlockGalleryItem('lock_img', '鐵櫃四位數密碼鎖', '🔒', () => popupImage('image02.jpg', 3000));
+          addNoteClue('【設施】發現生鏽鐵櫃需 4 位數密碼');
+        },
         messages: ["結合信中的線索：信中的所有數字，或許是一個逃出的關鍵。"],
         inputNode: true,
         choices: [{ text: "放棄，先看別的地方", nextNode: "chap1_hub" }]
@@ -928,7 +1002,11 @@
       chap1_cabinet_success: {
         chat: 'unknown',
         system: "【系統】：『喀啦』一聲密碼鎖開了！獲得【生鏽長鐵勾】。",
-        action: () => { gameState.cabinetOpen = true; gameState.hasHook = true; },
+        action: () => { 
+          gameState.cabinetOpen = true; 
+          gameState.hasHook = true; 
+          addNoteClue('【推導結果】密碼 0424 正確解開鐵櫃');
+        },
         messages: ["拿上能用的東西，去把排水口裡的東西弄出來。"],
         choices: [{ text: "拿走鐵勾，離開鐵櫃", nextNode: "chap1_hub" }]
       },
@@ -1444,3 +1522,4 @@
   </script>
 </body>
 </html>
+
