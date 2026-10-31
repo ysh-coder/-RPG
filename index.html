@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LAST LIGHT: WhatsApp Escape v1.4.1 Fix</title>
+  <title>LAST LIGHT: WhatsApp Escape v1.5 (Chapter 4 Updated)</title>
   <style>
     body {
       margin: 0; background-color: #000; display: flex;
@@ -173,7 +173,7 @@
     .app-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
     .app-view.active { display: flex; }
 
-    /* App: WhatsApp 聊天 */
+    /* App 1: WhatsApp 聊天 */
     .chat-bg {
       background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
       background-color: #0B141A; background-blend-mode: overlay; padding: 15px; overflow-y: auto; flex-direction: column; flex: 1;
@@ -224,29 +224,25 @@
     #free-input-container input { flex: 1; background: #2A3942; border: 1px solid #8696A0; color: white; padding: 10px 15px; border-radius: 20px; outline: none; }
     #free-input-container button { background: #00A884; border: none; color: #0B141A; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-    /* App: 相簿 / 線索庫 (動態生成) */
+    /* App 2: 物品 / 相簿庫 */
     #app-gallery { padding: 15px; color: white; overflow-y: auto; background: #0B141A; }
     .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-    .gallery-item { background: #1F2C34; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; border: 1px solid #33444f; }
+    .gallery-item { background: #1F2C34; border-radius: 8px; padding: 12px 10px; text-align: center; cursor: pointer; border: 1px solid #33444f; transition: 0.2s; }
+    .gallery-item:active { background: #2A3942; }
 
-    /* App: 語音備忘錄 (動態生成) */
+    /* App 3: 語音備忘錄 */
     #app-voice { padding: 15px; color: white; overflow-y: auto; background: #0B141A; }
-    .voice-card { background: #1F2C34; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .voice-card { background: #1F2C34; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #33444f; }
     .voice-play-btn { background: #00A884; color: #0B141A; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-    /* App: 筆記本 (動態生成) */
-    #app-notes { padding: 15px; color: white; overflow-y: auto; background: #0B141A; flex: 1; display: flex; flex-direction: column; }
-    .note-log { background: #111B21; padding: 12px; border-radius: 8px; color: #00A884; font-family: monospace; font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
-    #user-textarea { flex: 1; background: #1F2C34; border: 1px solid #33444f; color: white; padding: 12px; border-radius: 8px; outline: none; resize: none; font-size: 14px; }
-
-    .empty-state { text-align: center; color: #8696A0; font-size: 13px; margin-top: 40px; }
+    .empty-state { text-align: center; color: #8696A0; font-size: 13px; margin-top: 50px; line-height: 1.6; }
 
     /* 底部 App 導航列 */
     #bottom-nav {
       height: 55px; background: #111B21; border-top: 1px solid #202C33; display: flex;
       justify-content: space-around; align-items: center; z-index: 20;
     }
-    .nav-item { color: #8696A0; display: flex; flex-direction: column; align-items: center; font-size: 10px; cursor: pointer; }
+    .nav-item { color: #8696A0; display: flex; flex-direction: column; align-items: center; font-size: 11px; cursor: pointer; flex: 1; }
     .nav-item.active { color: #00A884; font-weight: bold; }
     .nav-icon { font-size: 20px; margin-bottom: 2px; }
 
@@ -267,7 +263,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
-    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.4.1</div>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -323,7 +319,7 @@
 
     <div id="qte-timer-bar"></div>
 
-    <!-- 頂部狀態列 (點擊開啟控制中心) -->
+    <!-- 頂部狀態列 -->
     <div id="status-bar" onclick="toggleControlCenter()">
       <span id="battery-display">🔦 100%</span>
       <span id="sanity-display">🧠 100%</span>
@@ -347,10 +343,8 @@
       <div id="chat-bg-04" class="chat-bg hidden"></div>
       <div id="typing-indicator">對方 正在輸入...</div>
       
-      <!-- 選項區 -->
       <div id="choices-container"></div>
 
-      <!-- 主動打字區 -->
       <div id="free-input-container">
         <input type="text" id="custom-msg-input" placeholder="主動輸入訊息 (如: 04, 密碼, 救我)...">
         <button onclick="sendCustomMessage()">發送</button>
@@ -360,26 +354,18 @@
       </div>
     </div>
 
-    <!-- App 2: 相簿 / 線索庫 (動態解鎖) -->
+    <!-- App 2: 物品 / 相簿庫 -->
     <div id="app-gallery" class="app-view">
-      <h3>🖼️ 線索相簿</h3>
-      <div style="font-size:12px; color:#8696A0;">探索獲得的相片與便條將自動收錄於此：</div>
+      <h3>🖼️ 物品 / 線索庫</h3>
+      <div style="font-size:12px; color:#8696A0;">探索獲得的物品與照片將於此顯示：</div>
       <div id="gallery-container" class="gallery-grid"></div>
     </div>
 
-    <!-- App 3: 語音備忘錄 (動態解鎖) -->
+    <!-- App 3: 語音備忘錄 -->
     <div id="app-voice" class="app-view">
       <h3>🎙️ 語音備忘錄</h3>
-      <div style="font-size:12px; color:#8696A0; margin-bottom:15px;">收聽收到的語音片段：</div>
+      <div style="font-size:12px; color:#8696A0; margin-bottom:15px;">已接收到的語音訊息片段：</div>
       <div id="voice-container"></div>
-    </div>
-
-    <!-- App 4: 筆記本 (動態解鎖) -->
-    <div id="app-notes" class="app-view">
-      <h3>📝 線索筆記本</h3>
-      <div id="note-log-container" class="note-log"></div>
-      <div style="font-size:12px; color:#8696A0; margin-bottom:5px;">玩家自由隨手筆記區：</div>
-      <textarea id="user-textarea" placeholder="在這裡記下你自己推理的線索..."></textarea>
     </div>
 
     <!-- 底部 App 導航列 -->
@@ -390,15 +376,11 @@
       </div>
       <div class="nav-item" onclick="switchApp('gallery')">
         <div class="nav-icon">🖼️</div>
-        <div>相簿</div>
+        <div>物品 / 線索</div>
       </div>
       <div class="nav-item" onclick="switchApp('voice')">
         <div class="nav-icon">🎙️</div>
-        <div>語音</div>
-      </div>
-      <div class="nav-item" onclick="switchApp('notes')">
-        <div class="nav-icon">📝</div>
-        <div>筆記</div>
+        <div>語音備忘錄</div>
       </div>
     </div>
 
@@ -409,7 +391,6 @@
     let deathCount = parseInt(sessionStorage.getItem('deathCount') || '0', 10);
     if(playerName) document.getElementById('player-name').value = playerName;
 
-    // 核心狀態與道具解鎖控制
     let gameState = {
       battery: 100,
       sanity: 100,
@@ -419,25 +400,22 @@
       exploredLeft: false, exploredRight: false, foundLighter: false, foundNail: false,
       exploredMud: false, exploredDrain: false, hasHook: false, hasKeycard: false, cabinetOpen: false,
       trusted04: false,
-      // 動態解鎖清單 (解決初始通關 Bug)
-      unlockedGallery: [], // 格式: { id, title, icon, actionFn }
-      unlockedVoice: [],   // 格式: { id, title, subtext, soundSrc }
-      unlockedNotes: ["【初始狀態】甦醒於漆黑泥暗室，記憶模糊。"]
+      unlockedGallery: [], 
+      unlockedVoice: []    
     };
 
-    // --- 動態渲染 App 介面 ---
     function renderGallery() {
       const container = document.getElementById('gallery-container');
       container.innerHTML = '';
       if (gameState.unlockedGallery.length === 0) {
-        container.innerHTML = `<div class="empty-state" style="grid-column: span 2;">（目前尚未獲得任何線索相片）</div>`;
+        container.innerHTML = `<div class="empty-state" style="grid-column: span 2;">（目前背包空無一物，尚未搜集到任何物品或照片）</div>`;
         return;
       }
       gameState.unlockedGallery.forEach(item => {
         const div = document.createElement('div');
         div.className = 'gallery-item';
         div.onclick = item.actionFn;
-        div.innerHTML = `<div style="font-size:30px;">${item.icon}</div><div style="font-size:12px; margin-top:5px;">${item.title}</div>`;
+        div.innerHTML = `<div style="font-size:32px;">${item.icon}</div><div style="font-size:12px; margin-top:6px;">${item.title}</div>`;
         container.appendChild(div);
       });
     }
@@ -446,7 +424,7 @@
       const container = document.getElementById('voice-container');
       container.innerHTML = '';
       if (gameState.unlockedVoice.length === 0) {
-        container.innerHTML = `<div class="empty-state">（目前尚無已儲存的語音備忘錄）</div>`;
+        container.innerHTML = `<div class="empty-state">（尚無已記錄的語音訊息）</div>`;
         return;
       }
       gameState.unlockedVoice.forEach(item => {
@@ -463,34 +441,18 @@
       });
     }
 
-    function renderNotes() {
-      const container = document.getElementById('note-log-container');
-      container.innerHTML = `<strong>[系統自動記錄線索]：</strong><br>` + gameState.unlockedNotes.map(n => `- ${n}`).join('<br>');
-    }
-
-    // 線索與道具解鎖函數
     function unlockGalleryItem(id, title, icon, actionFn) {
       if (!gameState.unlockedGallery.some(i => i.id === id)) {
         gameState.unlockedGallery.push({ id, title, icon, actionFn });
-        renderGallery();
       }
     }
 
     function unlockVoiceMemo(id, title, subtext, soundSrc) {
       if (!gameState.unlockedVoice.some(i => i.id === id)) {
         gameState.unlockedVoice.push({ id, title, subtext, soundSrc });
-        renderVoice();
       }
     }
 
-    function addNoteClue(clueText) {
-      if (!gameState.unlockedNotes.includes(clueText)) {
-        gameState.unlockedNotes.push(clueText);
-        renderNotes();
-      }
-    }
-
-    // 控制中心開關
     function toggleControlCenter() {
       document.getElementById('control-center').classList.toggle('open');
     }
@@ -515,7 +477,7 @@
         } else if (gameState.cabinetOpen) {
           res.innerText = '發現設備訊號：鐵櫃 [解鎖完成]';
         } else {
-          res.innerText = '發現加密訊號：生鏽鐵櫃密碼鎖';
+          res.innerText = '發現加密訊號：診所防爆門感應網';
         }
       }, 1000);
     }
@@ -528,9 +490,8 @@
       
       if (appName === 'gallery') renderGallery();
       if (appName === 'voice') renderVoice();
-      if (appName === 'notes') renderNotes();
 
-      const navIdx = {'whatsapp':0, 'gallery':1, 'voice':2, 'notes':3}[appName];
+      const navIdx = {'whatsapp':0, 'gallery':1, 'voice':2}[appName];
       document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
     }
 
@@ -543,7 +504,7 @@
       document.getElementById('prof-bio').innerText = activeChat === '04' ? '警告：不要相信指引你的光' : '在線上 - Speed Dating 配對者';
       
       const totalUnlocked = gameState.unlockedGallery.length + gameState.unlockedVoice.length;
-      document.getElementById('media-count-text').innerText = `目前已搜集 ${totalUnlocked} 個線索檔案。`;
+      document.getElementById('media-count-text').innerText = `目前已搜集 ${totalUnlocked} 個線索/語音檔案。`;
     }
     function closeProfileModal() {
       document.getElementById('profile-modal').style.display = 'none';
@@ -766,9 +727,6 @@
       start: {
         chat: 'unknown',
         system: "【序章：窒息之匣】\n一陣劇烈的暈眩後，{name}從無盡的黑暗中甦醒。四周沒有一絲光線，空氣中瀰漫著濃烈的泥土與鐵鏽味。",
-        action: () => {
-          renderGallery(); renderVoice(); renderNotes();
-        },
         messages: ["{name}醒了。", "{name}的心跳聲大到連我在上面都聽得見。"],
         choices: [
           { text: "我是誰？！救命啊！！！", nextNode: "panic_shout" },
@@ -780,7 +738,6 @@
         chat: 'unknown',
         action: () => {
           setTimeout(() => { playVoiceMemo(); }, 3500); 
-          // 解鎖語音 App 檔案 1
           unlockVoiceMemo('voice_screaming', '語音訊息 0:04', '包含慘叫聲與地下回音', 'soundeffect01.mp3');
         },
         messages: ["🔊 [語音訊息 0:04]"],
@@ -818,7 +775,6 @@
         action: () => { 
           gameState.exploredLeft = true; 
           consumeBattery(10); 
-          addNoteClue('木板血字「不要相信手機裡的人」');
         },
         messages: ["摸到了什麼嗎？"],
         choices: [{ text: "沒...沒有。", nextNode: "explore_hub" }]
@@ -833,7 +789,10 @@
       explore_pocket: {
         chat: 'unknown',
         system: "【系統】：在自己的外套內袋裡，摸到了一個金屬打火機。",
-        action: () => { gameState.foundLighter = true; },
+        action: () => { 
+          gameState.foundLighter = true; 
+          unlockGalleryItem('item_lighter', '金屬打火機', '🔥', () => popupImage('image02.jpg', 2000));
+        },
         messages: ["{name}在猶豫什麼？"],
         choices: [
           { text: "點燃打火機，我想看清這裡！", nextNode: "lighter_death" },
@@ -849,7 +808,10 @@
       explore_bottom: {
         chat: 'unknown',
         system: "【系統】：拔出了一根「生鏽長鐵釘」。",
-        action: () => { gameState.foundNail = true; },
+        action: () => { 
+          gameState.foundNail = true; 
+          unlockGalleryItem('item_nail', '生鏽長鐵釘', '📍', () => popupImage('image02.jpg', 2000));
+        },
         messages: ["好極了。對準正上方那塊有水漬的木板邊緣..."],
         choices: [{ text: "準備撬開木板", nextNode: "explore_hub" }]
       },
@@ -920,9 +882,6 @@
         chat: 'unknown',
         messages: ["還記得在派對上的『配對號碼』嗎？胸前貼著幾號？"],
         system: "【系統】：大腦想起胸前的貼紙寫著數字『27』。",
-        action: () => {
-          addNoteClue('【個人線索】胸前貼紙號碼：27');
-        },
         messagesAfter: ["想起來了嗎？這很重要。現在，仔細搜查周圍。"],
         choices: [{ text: "好，我看看四周。", nextNode: "chap1_hub" }]
       },
@@ -944,10 +903,7 @@
         system: "【系統】：在爛泥中，你摸到了一個密封防水袋！裡面裝著一封字跡扭曲、沾滿血跡的便條...",
         action: () => { 
           gameState.exploredMud = true; 
-          // 首次發現泥坑便條：解鎖相簿與筆記本
           unlockGalleryItem('letter_04', '04 的血書便條', '📜', openLetterModal);
-          addNoteClue('【04號便條】囚禁天數：3天3夜');
-          addNoteClue('【04號便條】算式提示：代號與配對號碼相扣減');
         },
         isLetterMsg: true,
         messages: ["找到了信件？點擊圖片放大閱讀信件內容！"],
@@ -972,7 +928,10 @@
           return "【系統】：排水口深處有東西反光，但裡面有鋒利鐵絲！你需要某種工具。";
         },
         action: () => {
-          if (gameState.hasHook) gameState.hasKeycard = true;
+          if (gameState.hasHook) {
+            gameState.hasKeycard = true;
+            unlockGalleryItem('item_keycard', '電子房卡', '💳', () => popupImage('image02.jpg', 2000));
+          }
           gameState.exploredDrain = true;
         },
         messages: () => {
@@ -986,9 +945,7 @@
         system: "【系統】：鐵櫃門把上掛著一個四位數密碼鎖。",
         action: () => { 
           popupImage('image02.jpg', 3000); 
-          // 檢查鐵櫃：解鎖密碼鎖照片
           unlockGalleryItem('lock_img', '鐵櫃四位數密碼鎖', '🔒', () => popupImage('image02.jpg', 3000));
-          addNoteClue('【設施】發現生鏽鐵櫃需 4 位數密碼');
         },
         messages: ["結合信中的線索：信中的所有數字，或許是一個逃出的關鍵。"],
         inputNode: true,
@@ -1005,7 +962,7 @@
         action: () => { 
           gameState.cabinetOpen = true; 
           gameState.hasHook = true; 
-          addNoteClue('【推導結果】密碼 0424 正確解開鐵櫃');
+          unlockGalleryItem('item_hook', '生鏽長鐵勾', '🪝', () => popupImage('image02.jpg', 2000));
         },
         messages: ["拿上能用的東西，去把排水口裡的東西弄出來。"],
         choices: [{ text: "拿走鐵勾，離開鐵櫃", nextNode: "chap1_hub" }]
@@ -1351,8 +1308,177 @@
 
       chap3_climax_end: {
         chat: 'unknown',
-        system: "【第三章完結：未完待續】\n{name}跨過金屬碎片。門外是一條白色無塵走廊，牆上貼著 Speed Dating 派對標誌與受害者相片……\n\nWhatsApp 傳來訊息：『找回你的記憶吧，{name}。最後的真相就在盡頭。』",
-        choices: [{ text: "重新體驗不同的選擇", nextNode: "restart" }]
+        system: "【第三章完結】\n{name}跨過金屬碎片。門外是一條白色無塵走廊，牆上貼著 Speed Dating 派對標誌與受害者相片……\n\nWhatsApp 傳來訊息：『找回你的記憶吧，{name}。最後的真相就在盡頭。』",
+        choices: [{ text: "推開門進入 B9 層無塵走廊...", nextNode: "chap4_start" }]
+      },
+
+      // ==================== 【第四章：記憶的解剖刀】 ====================
+      chap4_start: {
+        chat: 'unknown',
+        system: "【第四章：記憶的解剖刀】\n離心力劇烈撕扯著身體，伴隨一陣令人牙酸的金屬嘎吱聲，失控下墜的電梯重重嵌進了最底層的金屬底座。\n{name} 雙膝劇痛，吃力地推開金屬門跨出，身處一條無塵走廊。空氣中瀰漫濃烈過氧化氫與乙醚味。",
+        action: () => { updateElevatorUI(9, "B9層 核心診所"); },
+        messages: [
+          "很高興看到你還保留著完整的心跳，{name}。",
+          "歡迎來到 B9 層——『極光診所』的核心設施。剛才那一趟下墜，已經幫我們把外面的雜音與廢物全都清理乾淨了。"
+        ],
+        choices: [
+          { text: "這到底是什麼地方？！牆上那些照片到底是怎麼回事？！", nextNode: "chap4_ask_facility" },
+          { text: "屠夫真的摔死了嗎？我是不是已經安全了？", nextNode: "chap4_ask_butcher" }
+        ]
+      },
+      chap4_ask_facility: {
+        chat: 'unknown',
+        messages: [
+          "這不是什麼邪教的宰殺場，{name}。這裡是一座專門重構大腦神經的診所。",
+          "牆上那些照片都是歷年參加 Speed Dating 的志願者。他們配對到的不是浪漫伴侶，而是腦神經相容性高達 99% 的『容器』。"
+        ],
+        choices: [{ text: "你簡直是個瘋子...我為什麼會被捲進來？！", nextNode: "chap4_explore_lobby" }]
+      },
+      chap4_ask_butcher: {
+        chat: 'unknown',
+        messages: [
+          "那個手持電鋸的『屠夫』只不過是本診所最粗暴的清掃工具罷了。從百米高空跌落，他的肉體早就成為爛泥了。",
+          "但安全？不，{name}。在你的大腦被這座診所的解剖刀徹底剖開之前，你離安全還很遙遠。"
+        ],
+        choices: [{ text: "（強忍身體的劇痛，看向走廊盡頭的大廳）", nextNode: "chap4_explore_lobby" }]
+      },
+      chap4_explore_lobby: {
+        chat: 'unknown',
+        system: "【系統】：{name} 沿著無塵走廊前行步入大廳。大廳中央有一座打碎的展示櫃，台面上放著一張《第一期 VIP 配對最終合照》。\n\n📥 【系統解鎖物品】：『VIP配對合照』已存入【物品/相簿 App】！",
+        action: () => {
+          unlockGalleryItem('photo_vip', 'VIP配對合照', '🖼️', () => popupImage('image02.jpg', 3000));
+        },
+        messages: [
+          "拿起那張照片。如果你想打開大廳盡頭的那扇 A-01 重型防爆門，你需要這張照片裡的答案。",
+          "仔細看看照片裡的每一個人，那裡面有你遺忘的過去。"
+        ],
+        choices: [
+          { text: "【切換至相簿 App】仔細檢視【VIP配對合照】", nextNode: "chap4_check_photo" },
+          { text: "不理會照片，直接走向走廊盡頭的防爆門", nextNode: "chap4_hallway_door" }
+        ]
+      },
+      chap4_check_photo: {
+        chat: 'unknown',
+        system: "【相簿細節放大觀察】:\n1. 照片左側：站著表情僵硬的你，胸前貼著號碼牌「27」。\n2. 照片右側角落：坐著一位戴著黑色金戒的男人，胸前貼著「01」號標籤 (主試官)。\n3. 背景牆面：印有高頻警戒區編號「ZONE-09」。\n4. 鋼柱排數代碼：「ROW-04」。",
+        action: () => { popupImage('image02.jpg', 3000); },
+        choices: [{ text: "（收起相簿，返回 WhatsApp 對話，前往防爆門面板）", nextNode: "chap4_hallway_door" }]
+      },
+      chap4_hallway_door: {
+        chat: 'unknown',
+        systemDanger: "⚠️ [驗證程序：請輸入試驗體 01 號（主試官）與 27 號在派對上的交集區域與排數座標代碼 (4位數字)]",
+        messages: [
+          "這扇門連接的是本診所的核心腦波控制室。密碼是由 01 號主試官設定的。",
+          "區域代碼（ZONE）加上排數代碼（ROW）。如果你沒在相簿裡看清細節而隨意輸入，門頂防禦系統會立刻噴灑氯氣。"
+        ],
+        inputNode: true,
+        choices: [{ text: "放棄，先看別的地方", nextNode: "chap4_explore_lobby" }]
+      },
+      chap4_door_fail: {
+        chat: 'unknown',
+        systemDanger: "❌ [驗證失敗！區域座標錯誤！防禦噴氣倒數 5 秒...]",
+        action: () => { changeSanity(-30); },
+        messages: ["蠢貨！我說過了，打開 🖼️ 相簿 App！仔細看背景牆上的 ZONE 編號和柱子上的 ROW 排號！"],
+        choices: [{ text: "重新輸入座標密碼", nextNode: "chap4_hallway_door" }]
+      },
+      chap4_door_success: {
+        chat: 'unknown',
+        system: "❇️ [驗證通過：ZONE-09 / ROW-04 座標匹配成功]\n巨型齒輪轉動聲響起，數噸重的防爆鋼門滑開。門後是一間沉浸在深藍色冷光中的龐大實驗室。",
+        messages: [
+          "很好，{name}。你的觀察力依舊像當年那樣犀利。",
+          "歡迎來到診所的核心——腦波數據演算室。"
+        ],
+        choices: [{ text: "邁步進入腦波數據演算室...", nextNode: "chap4_lab_enter" }]
+      },
+      chap4_lab_enter: {
+        chat: 'unknown',
+        system: "【系統】：{name} 走進演算室。控制台上方亮著一台帶有音波顯示屏的主控保險箱。\n\n📥 【系統解鎖語音】：『語音訊息 0:18 - 診斷室背景音』已存入【語音備忘錄 App】！",
+        action: () => {
+          unlockVoiceMemo('voice_018', '語音訊息 0:18', '包含診斷室高頻嗶聲與脈搏律動', 'soundeffect01.mp3');
+        },
+        choices: [{ text: "這段錄音是什麼意思？要怎麼解開保險箱？", nextNode: "chap4_ask_voice_puzzle" }]
+      },
+      chap4_ask_voice_puzzle: {
+        chat: 'unknown',
+        messages: [
+          "這段錄音是當年手術室裡的現場監控錄音。在雜音背景下，心跳監測儀發出的高頻『嗶』聲被分成了四個獨立段落。",
+          "每一個段落中『嗶』聲出現的次數，代表保險箱的一位密碼。",
+          "打開你的 🎙️ 語音備忘錄 App，仔細數數每個停頓間隔內響了幾次。"
+        ],
+        choices: [{ text: "【聽從指示】轉向手機連線...", nextNode: "chap4_04_intercept" }]
+      },
+      chap4_04_intercept: {
+        chat: '04',
+        systemHack: "【系統異常】：手機螢幕劇烈閃爍！『04號』的加密頻道再次強行接入！",
+        messages: [
+          "{name}！聽得到嗎？！不要全信那個未知號碼的鬼話！",
+          "這段語音錄音確實藏著保險箱密碼！但你必須聽清楚——背景裡的聲音那是人的脈搏在瀕死時的跳動次數！",
+          "第一段...第二段...第三段...第四段！把這四個數字記下來！"
+        ],
+        choices: [
+          { text: "【開啟語音 App】聆聽【語音訊息 0:18】並記錄次數", nextNode: "chap4_listening_detail" },
+          { text: "不聽錄音，隨便在保險箱輸入數字試試", nextNode: "chap4_vault_input" }
+        ]
+      },
+      chap4_listening_detail: {
+        chat: '04',
+        system: "🎧 【語音音檔細節分析】:\n0:00-0:04 [段一]: 金屬嘀嘀聲響了 3 次\n0:05-0:08 [段二]: 喘息微弱響了 1 次\n0:09-0:14 [段三]: 電流連貫響了 5 次\n0:15-0:18 [段四]: 歸於微弱響了 2 次\n\n💡 推導得出密碼序列：3 - 1 - 5 - 2",
+        choices: [{ text: "（返回 WhatsApp 介面，在保險箱輸入密碼 3152）", nextNode: "chap4_vault_input" }]
+      },
+      chap4_vault_input: {
+        chat: 'unknown',
+        system: "【系統】：{name} 來到主控保險箱前，伸手指在金屬解碼鍵盤上按壓。",
+        inputNode: true,
+        choices: [{ text: "放棄，先想一想", nextNode: "chap4_04_intercept" }]
+      },
+      chap4_vault_fail: {
+        chat: 'unknown',
+        systemDanger: "❌ [聲紋頻率不匹配！保險箱防盜鎖死！]",
+        messages: [
+          "你聽錯了！切換到 🎙️ 語音 App！認真聽每一個停頓點之間的『嗶』聲次數！",
+          "第一段響了3次，第二段1次，第三段5次，第四段2次！不要搞錯順序！"
+        ],
+        choices: [{ text: "重新輸入聲紋密碼", nextNode: "chap4_vault_input" }]
+      },
+      chap4_vault_success: {
+        chat: 'unknown',
+        system: "❇️ [聲紋匹配成功！解鎖金屬保險箱...]\n『喀噠！』重型保險箱門彈開。裡面有一本《主試官腦神經切除手術日誌》與【首席醫師檔案】！\n\n📥 【系統解鎖物品】：『首席醫師檔案』已存入【物品/相簿 App】！",
+        action: () => {
+          unlockGalleryItem('file_doctor', '首席醫師檔案', '📄', () => popupImage('image02.jpg', 3000));
+        },
+        choices: [
+          { text: "這不可能...我的檔案？我是這座診所的醫師？！", nextNode: "chap4_reveal_confrontation" },
+          { text: "（顫抖著打開檔案，閱讀裡面的手術紀錄）", nextNode: "chap4_read_dossier" }
+        ]
+      },
+      chap4_read_dossier: {
+        chat: 'unknown',
+        system: "📄 【檔案詳細記載】:\n『項目負責人：{name} 醫師。』\n『實驗內容：設計 Speed Dating 派對，篩選個體轉移記憶。』\n『重大事故：三年前對 04 號切除記憶時遭反抗，被注射過量逆向失憶毒素，記憶喪失後作為 27 號容器封入地下木箱...』",
+        choices: [{ text: "（大腦傳來陣陣撕裂般的劇痛，瘋狂搖頭）", nextNode: "chap4_reveal_confrontation" }]
+      },
+      chap4_reveal_confrontation: {
+        chat: 'unknown',
+        messages: [
+          "想起來了嗎，{name}大夫？或者說...我該叫你『27號受試體』？",
+          "你一直以為自己是無辜的被害者，但事實是——這座血腥的地下診所、這個獵殺系統，全都是你三年前親手建立的！"
+        ],
+        choices: [{ text: "（04 號強行連線）", nextNode: "chap4_04_final_speech" }]
+      },
+      chap4_04_final_speech: {
+        chat: '04',
+        systemHack: "【系統】：04 號語音狂笑連線！",
+        messages: [
+          "哈哈哈……哈哈哈哈哈哈！你終於看到自己的真面目了！",
+          "那一晚，是我在最後關頭把毒素推進你的脖子裡的！是我把你關進那個活埋木箱裡的！我要讓你這個魔鬼親自體驗一下被困在黑暗中有多麼絕望！"
+        ],
+        choices: [
+          { text: "是我...是我害死了那麼多人...", nextNode: "chap4_to_be_continued" },
+          { text: "不！這一切都不是真的！", nextNode: "chap4_to_be_continued" }
+        ]
+      },
+      chap4_to_be_continued: {
+        chat: 'unknown',
+        system: "【第四章完結】\n警報聲狂響，整座 B9 層的無塵白牆開始像電視訊號不良般劇烈抖動、像素化崩解……\n你的手機螢幕爆發出刺眼的白光，所有對話視窗被強制中斷！\n\n── 【第四章完結：待續】 ──",
+        choices: [{ text: "重新體驗第四章", nextNode: "chap4_start" }, { text: "重新開始遊戲", nextNode: "restart" }]
       }
     };
 
@@ -1461,15 +1587,23 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'input-group';
         const inputField = document.createElement('input');
-        inputField.type = 'text'; inputField.placeholder = '輸入四位數字...'; inputField.maxLength = 4;
+        inputField.type = 'text'; inputField.placeholder = '輸入密碼...'; inputField.maxLength = 10;
         const sendBtn = document.createElement('button');
-        sendBtn.innerText = '嘗試開鎖';
+        sendBtn.innerText = '提交';
         sendBtn.onclick = async () => {
           playSentSfx();
-          const val = inputField.value;
+          const val = inputField.value.trim();
           await handleSentText("輸入了: " + val);
-          if (val === '0424') playNode("chap1_cabinet_success");
-          else playNode("chap1_cabinet_fail");
+          if (nodeId === 'chap1_cabinet') {
+            if (val === '0424') playNode("chap1_cabinet_success");
+            else playNode("chap1_cabinet_fail");
+          } else if (nodeId === 'chap4_hallway_door') {
+            if (val === '0904' || val.toLowerCase().includes('0904')) playNode("chap4_door_success");
+            else playNode("chap4_door_fail");
+          } else if (nodeId === 'chap4_vault_input') {
+            if (val === '3152') playNode("chap4_vault_success");
+            else playNode("chap4_vault_fail");
+          }
         };
         inputGroup.appendChild(inputField); inputGroup.appendChild(sendBtn);
         choicesContainer.appendChild(inputGroup);
@@ -1522,4 +1656,3 @@
   </script>
 </body>
 </html>
-
