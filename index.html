@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LAST LIGHT: WhatsApp Escape v1.5.2 Alignment Fix</title>
+  <title>LAST LIGHT: WhatsApp Escape v2.0 Final Edition</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -182,7 +182,7 @@
     .app-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
     .app-view.active { display: flex; }
 
-    /* App 1: WhatsApp 聊天頁面 (確保為 Flex Column 容器) */
+    /* App 1: WhatsApp 聊天頁面 (Flex Column 容器) */
     .chat-bg {
       background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
       background-color: #0B141A; background-blend-mode: overlay; padding: 12px 14px; overflow-y: auto; 
@@ -190,7 +190,7 @@
     }
     .chat-bg.hidden { display: none !important; }
     
-    /* 對話氣泡靠左/靠右對齊修正 */
+    /* 對話氣泡靠左/靠右對齊樣式 */
     .msg {
       max-width: 80%; padding: 7px 10px; border-radius: 8px; margin-bottom: 8px;
       font-size: 14.5px; line-height: 1.45; position: relative; word-wrap: break-word; 
@@ -311,7 +311,7 @@
 
   <div id="start-screen">
     <h1>窒息之匣</h1>
-    <div class="subtitle">LAST LIGHT : WhatsApp Escape v1.5.2</div>
+    <div class="subtitle">LAST LIGHT : WhatsApp Escape v2.0 Final</div>
     <input type="text" id="player-name" placeholder="輸入你的名字 (選填)" maxlength="10" autocomplete="off">
     <button id="start-btn" onclick="startGame()">睜開眼睛</button>
   </div>
@@ -571,7 +571,7 @@
       const headerObj = chatData[activeChat];
       document.getElementById('prof-name').innerText = headerObj.name;
       document.getElementById('prof-avatar').innerText = headerObj.avatar;
-      document.getElementById('prof-bio').innerText = activeChat === '04' ? '警告：不要相信指引你的光' : '在線上 - Speed Dating 配對者';
+      document.getElementById('prof-bio').innerText = activeChat === '04' ? '警告：不要相信指引你的光' : '在線上 - 特別緝兇組 PNI 介面';
       
       const totalUnlocked = gameState.unlockedGallery.length + gameState.unlockedVoice.length;
       document.getElementById('media-count-text').innerText = `目前已搜集 ${totalUnlocked} 個線索/語音檔案。`;
@@ -711,9 +711,9 @@
       phone.classList.add('heavy-shake');
       timerBar.style.display = 'block'; timerBar.style.width = '100%';
       timerBar.style.transition = 'none'; void timerBar.offsetWidth;
-      timerBar.style.transition = 'width 1s linear'; timerBar.style.width = '0%';
+      timerBar.style.transition = 'width 3s linear'; timerBar.style.width = '0%';
 
-      qteTimer = setTimeout(() => { handleQTETimeout(); }, 1000);
+      qteTimer = setTimeout(() => { handleQTETimeout(); }, 3000);
     }
 
     function stopQTETimer() {
@@ -730,7 +730,7 @@
 
     let activeChat = 'unknown'; 
     const chatData = {
-      'unknown': { name: '未知號碼', avatar: '?', color: '#DFE5E7' },
+      'unknown': { name: '未知號碼 (高級督察)', avatar: '👮', color: '#DFE5E7' },
       '04': { name: '04 (未儲存號碼)', avatar: '⚠️', color: '#FF5252' }
     };
 
@@ -1234,7 +1234,7 @@
         choices: [{ text: "衝進維修電梯！", nextNode: "chap3_start" }]
       },
 
-      // ==================== 【第三章：深淵升降機 - 1秒 QTE 狂暴挑戰】 ====================
+      // ==================== 【第三章：深淵升降機 - 3秒 QTE 限時挑戰】 ====================
       chap3_start: {
         chat: 'unknown',
         system: "【第三章：深淵升降機】\n『哐當！！！』重型鐵門合上。兩米見方的金屬電梯急速下墜。",
@@ -1269,7 +1269,7 @@
           switchBgm('butcher');
           popupImage('image01.jpg', 1500, true);
         },
-        systemDanger: "【QTE 1/4 - 限時 1 秒】：『砰——！！！』天花板被斧頭劈開！巨大的金屬頂板朝你面門砸落！",
+        systemDanger: "【QTE 1/4 - 限時 3 秒】：『砰——！！！』天花板被斧頭劈開！巨大的金屬頂板朝你面門砸落！",
         choices: [
           { text: "⚡ 【立刻向左翻滾閃避！】", nextNode: "chap3_qte_2_intro", isAction: true },
           { text: "舉雙手死撐", nextNode: "chap3_qte_death_1", isAction: true },
@@ -1287,7 +1287,7 @@
       chap3_qte_2_intro: {
         chat: 'unknown',
         isQTE: true,
-        systemDanger: "【QTE 2/4 - 限時 1 秒】：頂部破洞伸出一隻沾滿鮮血的大手，死死卡住了你的喉嚨！",
+        systemDanger: "【QTE 2/4 - 限時 3 秒】：頂部破洞伸出一隻沾滿鮮血的大手，死死卡住了你的喉嚨！",
         choices: [
           { text: "⚡ 【拿生鏽長鐵勾猛刺大手！】", nextNode: "chap3_qte_3_intro", isAction: true },
           { text: "用雙手拉開他", nextNode: "chap3_qte_death_2", isAction: true },
@@ -1304,7 +1304,7 @@
       chap3_qte_3_intro: {
         chat: 'unknown',
         isQTE: true,
-        systemDanger: "【QTE 3/4 - 限時 1 秒】：『崩！！！』主鋼纜斷裂！巨大的金屬滑輪從天花板高速砸下！",
+        systemDanger: "【QTE 3/4 - 限時 3 秒】：『崩！！！』主鋼纜斷裂！巨大的金屬滑輪從天花板高速砸下！",
         choices: [
           { text: "⚡ 【立刻蹲下貼緊左側壁角！】", nextNode: "chap3_qte_4_intro", isAction: true },
           { text: "往中間跳躍", nextNode: "chap3_qte_death_3", isAction: true },
@@ -1322,7 +1322,7 @@
         chat: 'unknown',
         isQTE: true,
         action: () => { updateElevatorUI(7, "⚡ 失控極速自由落體"); },
-        systemDanger: "【QTE 4/4 - 限時 1 秒】：樓層計數狂飆！『B8層』紅燈亮起的瞬間！",
+        systemDanger: "【QTE 4/4 - 限時 3 秒】：樓層計數狂飆！『B8層』紅燈亮起的瞬間！",
         choices: [
           { text: "⚡ 【立刻拉下黃色煞車手把！】", nextNode: "chap3_brake_success", isAction: true },
           { text: "按下所有樓層按鈕", nextNode: "chap3_brake_early", isAction: true },
@@ -1344,7 +1344,7 @@
 
       chap3_qte_timeout_death: {
         chat: 'unknown',
-        system: "【結局：反應遲鈍】\n你在極度恐懼中遲疑了！1 秒的猶豫讓你失去了最後生存的希望，屠夫的電鋸貫穿了你的胸膛...",
+        system: "【結局：反應遲鈍】\n你在極度恐懼中遲疑了！3 秒的猶豫讓你失去了最後生存的希望，屠夫的電鋸貫穿了你的胸膛...",
         choices: [{ text: "重新開始", nextNode: "restart" }]
       },
 
@@ -1522,7 +1522,7 @@
       },
       chap4_read_dossier: {
         chat: 'unknown',
-        system: "📄 【檔案詳細記載】:\n『項目負責人：{name} 醫師。』\n『實驗內容：設計 Speed Dating 派對，篩選個體轉移記憶。』\n『重大事故：三年前對 04 號切除記憶時遭反抗，被注射過量逆向失憶毒素，記憶喪失後作為 27 號容器封入地下木箱...』",
+        system: "📄 【檔案詳細記載】:\n『項目負責人：{name} 醫師。』\n『實驗內容：設計 Speed Dating 派對，篩選個體轉移記憶。』\n『重大事故：三年前對 04 號切除記憶時遭反抗，被注射過量逆向失億毒素，記憶喪失後作為 27 號容器封入地下木箱...』",
         choices: [{ text: "（大腦傳來陣陣撕裂般的劇痛，瘋狂搖頭）", nextNode: "chap4_reveal_confrontation" }]
       },
       chap4_reveal_confrontation: {
@@ -1547,8 +1547,181 @@
       },
       chap4_to_be_continued: {
         chat: 'unknown',
-        system: "【第四章完結】\n警報聲狂響，整座 B9 層的無塵白牆開始像電視訊號不良般劇烈抖動、像素化崩解……\n你的手機螢幕爆發出刺眼的白光，所有對話視窗被強制中斷！\n\n── 【第四章完結：待續】 ──",
-        choices: [{ text: "重新體驗第四章", nextNode: "chap4_start" }, { text: "重新開始遊戲", nextNode: "restart" }]
+        system: "【第四章完結】\n警報聲狂響，整座 B9 層的無塵白牆開始像電視訊號不良般劇烈抖動、像素化崩解……\n你的手機螢幕爆發出刺眼的白光，所有對話視窗被強制中斷！",
+        choices: [
+          { text: "【連線警務處 PNI 神經介面】進入第五章大結局", nextNode: "chap5_start" },
+          { text: "重新體驗第四章", nextNode: "chap4_start" },
+          { text: "重新開始遊戲", nextNode: "restart" }
+        ]
+      },
+
+      // ==================== 【第五章：重演的記憶與二十年的懸案 (終章)】 ====================
+      chap5_start: {
+        chat: 'unknown',
+        system: "【第五章：重演的記憶與二十年的懸案】\n劇烈的雜訊覆蓋了整個畫面！第四章結尾的無塵室、診所白牆如碎裂的玻璃般一片片剝落，露出後面無盡的藍色數據碼與腦波頻譜圖。\n警笛聲在耳邊由遠及近，但這一次，不是恐怖的電鋸聲，而是現實中真實的警車鳴笛！",
+        messages: [
+          "{name}，冷靜下來！聽得見我的聲音嗎？我是警務處特別緝兇組高級督察。",
+          "你現在所看到的一切——木箱、鐵櫃、地下診所，全都是你大腦在遭受極度創傷後產生的『記憶防衛機制』！"
+        ],
+        choices: [
+          { text: "警察……？那我到底是在哪裡？！我不是這座診所的醫師嗎？！", nextNode: "chap5_explain_truth_1" },
+          { text: "04 呢？這一切難道都是假的？！", nextNode: "chap5_explain_truth_2" }
+        ]
+      },
+
+      chap5_explain_truth_1: {
+        chat: 'unknown',
+        messages: [
+          "你不是什麼惡毒的醫師，你是二十年前那單『Speed Dating 連環慘案』中唯一的目擊者。",
+          "二十年前的今天，你和 04 號（林晨）在那場派對記載了真兇特徵，隨後被綁架至地下室滅口。",
+          "案件懸孤了整整二十年。直到今天，我們利用『DNA 遺傳神經重構技術』，從證物 DNA 中提取了你的意識記憶。"
+        ],
+        choices: [{ text: "所以我……早在二十年前就已經死了？！", nextNode: "chap5_explain_truth_2" }]
+      },
+
+      chap5_explain_truth_2: {
+        chat: 'unknown',
+        system: "【系統】：螢幕上自動彈出一張二十年前的警方證物照片——《04 的血書便條》。照片邊角帶著真實的卷宗編號：【CASE-2006-0424】。",
+        messages: [
+          "是的，{name}。你在二十年前就已經停止了心跳。",
+          "這個 WhatsApp 逃脫遊戲，是我們為你量身打造的神經催眠介面。只有讓你重新在記憶中『逃脫一次』，才能突破你死前被創傷封印的記憶，幫我們找出當年的真兇！"
+        ],
+        choices: [{ text: "（顫抖）那我看到的『屠夫』……就是當年殺害我和 04 的真正兇手？", nextNode: "chap5_killer_identity" }]
+      },
+
+      chap5_killer_identity: {
+        chat: 'unknown',
+        messages: [
+          "沒錯！那個在追殺你的屠夫，就是你深層潛意識對真兇的恐懼化身。",
+          "真兇當年掩蓋了一切證據，如今他已經是位高權重的政商巨擘。二十年的追訴期只剩下最後一小時！",
+          "{name}，我們需要你回想起真兇最關鍵的肉體特徵與當年的警用備案資訊！"
+        ],
+        choices: [{ text: "告訴我該怎麼做！我要讓當年的真相大白！", nextNode: "chap5_puzzle_act2" }]
+      },
+
+      chap5_puzzle_act2: {
+        chat: 'unknown',
+        system: "🧩 【記憶重組關卡：解鎖被封印的現場記憶】\n專案小組將二十年前現場採集到的證物數據注入你的神經介面。你需要將這些線索與前四章的記憶進行交叉比對，推算出真兇當年的警用通訊頻道與胸牌號碼。",
+        messages: [
+          "仔細回想：\n1. 第一章信件提及你挨過的時間（三天三夜 = 72 小時）。\n2. 第四章相簿中，主試官 (01) 與你 (27) 的號碼。\n3. 真兇當年離開案發現場時留下的頻道公式：[(27 + 01) × 72] ÷ 2。"
+        ],
+        inputNode: true,
+        choices: [{ text: "請求警方提供提示", nextNode: "chap5_puzzle_hint" }]
+      },
+
+      chap5_puzzle_hint: {
+        chat: 'unknown',
+        messages: ["公式是：(27 + 1) * 72 / 2。算出來的 4 位數字就是答案！"],
+        choices: [{ text: "重新輸入代碼", nextNode: "chap5_puzzle_act2" }]
+      },
+
+      chap5_puzzle_success: {
+        chat: 'unknown',
+        system: "❇️ 【神經解碼成功：鎖定二十年前警用檔案 #1008】\n畫面中傳來一陣高清的音訊解碼聲！04 號（林晨）死前的語音片段再次響起，但這次沒有雜音，清晰無比！",
+        action: () => { playVoiceMemo('soundeffect01.mp3'); },
+        messages: [
+          "（04 號語音頻率）{name}……我看清他的臉了！他不是什麼醫生……他是當年調查小組的副指揮官！",
+          "他在 Speed Dating 派對上挑選目標……他把我們的身體埋在……地下 B9 層的廢棄水箱裡！"
+        ],
+        choices: [{ text: "（記憶衝擊）我想起來了！全部都想起來了！", nextNode: "chap5_confrontation_prep" }]
+      },
+
+      chap5_confrontation_prep: {
+        chat: 'unknown',
+        systemDanger: "⚠️ 【警告：死者潛意識創傷狂暴化！】\n當真實記憶被喚醒的瞬間，死者大腦對『死亡瞬間』的恐怖回憶發起了極度劇烈的反噬！\n整個神經模擬空間開始狂暴搖晃，二十年前的『屠夫』帶著巨大的金屬電鋸重新在記憶中央凝結！",
+        messages: [
+          "不好！{name} 的大腦創傷機制在阻止記憶導出！",
+          "這是你二十年來對那個殺手的恐懼最高峰！你必須在虛擬世界裡親手擊敗這個恐懼，警察才能取得最終的 DNA 驗證密碼！"
+        ],
+        choices: [{ text: "【進入記憶終極決戰】", nextNode: "chap5_qte_boss" }]
+      },
+
+      chap5_qte_boss: {
+        chat: 'unknown',
+        isQTE: true,
+        action: () => {
+          switchBgm('butcher');
+          popupImage('image01.jpg', 1500, true);
+        },
+        systemDanger: "【終極 QTE - 限時 3 秒】：重裝屠夫舉起電鋸朝你的精神核心劈下！這一次你不再是無助的受害者！",
+        choices: [
+          { text: "⚡ 【拿證物鐵勾直刺屠夫面具下的真面目！】", nextNode: "chap5_qte_win", isAction: true },
+          { text: "抱頭閉眼逃跑", nextNode: "chap5_qte_fail", isAction: true },
+          { text: "呼叫警方斷開連線", nextNode: "chap5_qte_fail", isAction: true }
+        ]
+      },
+
+      chap5_qte_fail: {
+        chat: 'unknown',
+        action: () => { playChainsaw(); },
+        system: "【結局：創傷吞噬】\n恐懼再次戰勝了你的意志。電鋸撕裂了精神核心，DNA 記憶導出失敗，二十年的真相再次被埋葬在黑暗中……",
+        choices: [{ text: "重新開始第五章", nextNode: "chap5_start" }]
+      },
+
+      chap5_qte_win: {
+        chat: 'unknown',
+        action: () => { stopAllSfx(); switchBgm('main'); },
+        system: "💥 【QTE 成功！創傷面具碎裂！】\n生鏽長鐵勾刺穿了面具！屠夫的恐怖外觀化作無數碎片散開，露出了裡面那張戴著名貴眼鏡、如今已滿頭白髮的政商大佬（當年副指揮官）的真實面容！\n巨型電鋸消散，整座漆黑的地下室瞬間被溫暖的陽光覆蓋。",
+        messages: [
+          "成功了！DNA 證物鏈與死者目擊記憶完整吻合！",
+          "我們拿到法庭所需的全部鐵證了！"
+        ],
+        choices: [{ text: "導出最後的證言，選擇這段記憶的歸宿", nextNode: "chap5_final_choice_hub" }]
+      },
+
+      chap5_final_choice_hub: {
+        chat: 'unknown',
+        system: "【系統】：記憶重構完成度 100%。警察專案小組已在現實中包圍了真兇的豪宅。\n導引員高級督察向你的數字意識發起最後詢問：\n『{name}，謝謝你堅持到了最後。案件已經破了，真兇逃不掉了。作為 DNA 重構體，你現在有權決定你這段意識的最後歸宿。』",
+        messages: ["做選擇吧，{name}。你的正義已經達成。"],
+        getChoices: () => {
+          let opts = [
+            { text: "【選擇一】將記憶上傳至法庭作證，隨後徹底安息（正義昭雪）", nextNode: "ending_true_justice" },
+            { text: "【選擇二】將數字意識保留在警方伺服器，繼續協助調查懸案（冷光守護者）", nextNode: "ending_good_guardian" },
+            { text: "【選擇三】在最後時刻將窒息痛苦腦波反向灌入真兇大腦（血親復仇）", nextNode: "ending_bad_revenge" }
+          ];
+          if (gameState.sanity < 40) {
+            opts.push({ text: "【選擇四】無法接受自己早已死亡的事實，大腦崩潰（拒絕現實）", nextNode: "ending_secret_denial" });
+          }
+          return opts;
+        }
+      },
+
+      ending_true_justice: {
+        chat: 'unknown',
+        system: "⚖️ 【現實世界：2046年10月31日 21:45】\n警務處舉行緊急記者會，宣佈破獲二十年前 Speed Dating 連環謀殺案。現任某集團主席（當年副指揮官）被當場逮捕。\n遺體在廢棄備用水箱中被尋獲，二十年的冤屈終於得到昭雪。",
+        messages: [
+          "{name}，林晨和你的家屬都收到消息了。謝謝你為這個世界留下了最後的光。",
+          "神經連線即將關閉。願你獲得真正的安寧。"
+        ],
+        systemDanger: "── 【TRUE ENDING：正義昭雪】 ──\n🕊️ 沉冤得雪，逝者安息。二十年的黑暗終於迎來了真正的曙光。",
+        choices: [{ text: "重新開始遊戲", nextNode: "restart" }]
+      },
+
+      ending_good_guardian: {
+        chat: 'unknown',
+        system: "💻 【系統指令：DNA 數字意識存檔至警用 AI 數據庫】\n你的目擊證言成功將真兇送入監獄。但你選擇不消逝，而是成為警方『PNI 懸案分析系統』的核心人工智能。",
+        messages: [
+          "歡迎加入特別緝兇組，{name}。",
+          "雖然你以另一種形式存在，但從今以後，我們將一起為更多無法發聲的死者討回公道。"
+        ],
+        systemHack: "── 【GOOD ENDING：冷光守護者】 ──\n🛡️ 身體雖已隕落，精神化為不熄的燈火，守護著城市的安寧。",
+        choices: [{ text: "重新開始遊戲", nextNode: "restart" }]
+      },
+
+      ending_bad_revenge: {
+        chat: 'unknown',
+        system: "⚡ 【警告：不正當神經反向傳輸！】\n你拒絕了平靜的安息，在連線切斷的瞬間，將二十年前被活埋窒息的極致痛苦腦波，透過警方的神經介面強行灌入了正在被捕的真兇大腦中！",
+        messages: ["{name}！快住手！這樣做會毀了你的意識！"],
+        systemDanger: "── 【BAD ENDING：血親復仇】 ──\n💀 以眼還眼，以牙還牙。你在仇恨中毀滅了敵人，也毀滅了自己。",
+        choices: [{ text: "重新開始遊戲", nextNode: "restart" }]
+      },
+
+      ending_secret_denial: {
+        chat: 'unknown',
+        system: "⚠️ 【系統警告：死者意識拒絕接受死亡事實！】\n理智值過低，你的大腦無法承受『自己早在二十年前已死』的殘酷真相，神經系統自我防衛機制再次強行啟動！",
+        messages: ["{name}！不要關閉心智！快醒過來！"],
+        systemHack: "── 【SECRET ENDING：拒絕現實】 ──\n🔄 記憶再次重置，遊戲重新返回【序章：窒息之匣】。",
+        choices: [{ text: "重新開始遊戲", nextNode: "restart" }]
       }
     };
 
@@ -1673,6 +1846,9 @@
           } else if (nodeId === 'chap4_vault_input') {
             if (val === '3152') playNode("chap4_vault_success");
             else playNode("chap4_vault_fail");
+          } else if (nodeId === 'chap5_puzzle_act2') {
+            if (val === '1008') playNode("chap5_puzzle_success");
+            else playNode("chap5_puzzle_hint");
           }
         };
         inputGroup.appendChild(inputField); inputGroup.appendChild(sendBtn);
@@ -1726,3 +1902,4 @@
   </script>
 </body>
 </html>
+
